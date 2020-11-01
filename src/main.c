@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include "bme280_api.h"
-#include "bcm2835_api.h"
+#include "gpio_api.h"
 #include "system_monitor.h"
 
 #define ALARM_MAXIMUM_CYCLE 4

@@ -1,5 +1,5 @@
 #include <bcm2835.h>
-#include "bcm2835_api.h"
+#include "gpio_api.h"
 
 /*!
  * @brief Function used to enable the ventilator. (HIGH/LOW logic inverted)
