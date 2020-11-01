@@ -59,8 +59,9 @@ void update_gpio_state(gpio_state *sensors, int sensors_length)
     for (int i = 0; i < sensors_length; i++)
     {
         sensors[i].state = bcm2835_gpio_lev(sensors[i].gpio);
-        printf("GPIO: %d, state: %d\n", sensors[i].state, sensors[i].gpio);
+        printf("GPIO: %d, state: %d\n", sensors[i].gpio, sensors[i].state);
     }
+    printf("\n\n");
 }
 
 /*!
