@@ -3,7 +3,6 @@
 #include "bcm2835_api.h"
 #include "system_monitor.h"
 #include "uart_api.h"
-#include "system_windows.h"
 
 #define ALARM_MAXIMUM_CYCLE 4
 #define ALARM_TIME_SIZE 500000
@@ -20,8 +19,6 @@ struct system_data enviroment_data;
 int alarm_step = 0;
 
 /* Program threads */
-pthread_t manage_user_inputs;
-pthread_t display_system_status;
 pthread_t set_temperature_thread;
 pthread_t control_actuators_thread;
 pthread_t store_display_thead;
@@ -58,9 +55,6 @@ int main(int argc, char* argv[])
     /* Setup bme280 - External temperature */
     setup_bme280();
 
-    /* Initialize system apresentation with ncurses */
-    init_system_apresentation(&enviroment_data);
-
     /* Initialize mutex to threads */
     pthread_mutex_init(&set_temperature_mutex, NULL);
     pthread_mutex_init(&control_actuators_mutex, NULL);
@@ -75,9 +69,8 @@ int main(int argc, char* argv[])
     pthread_create(&set_temperature_thread, NULL, &set_system_temperatures, NULL);
     pthread_create(&control_actuators_thread, NULL, &control_actuators, NULL);
     pthread_create(&store_display_thead, NULL, &store_display_temperature, NULL);
-    pthread_create(&manage_user_inputs, NULL, &setup_menu_windows, NULL);
+
     usleep(10000); /* Wait thread setup of ncurses input region */
-    pthread_create(&display_system_status, NULL, &setup_system_status_interface, NULL);
 
     /* Initialize alarm callbacks */
     ualarm(ALARM_TIME_SIZE, ALARM_TIME_SIZE);
@@ -86,8 +79,6 @@ int main(int argc, char* argv[])
     pthread_join(set_temperature_thread, NULL);
     pthread_join(control_actuators_thread, NULL);
     pthread_join(store_display_thead, NULL);
-    pthread_join(manage_user_inputs, NULL);
-    pthread_join(display_system_status, NULL);
 
     return 0;
 }
@@ -119,8 +110,6 @@ void handle_all_interruptions(int signal) {
     ualarm(0, 0);
 
     /* Cancel all threads activies */
-    pthread_cancel(display_system_status);
-    pthread_cancel(manage_user_inputs);
     pthread_cancel(store_display_thead);
     pthread_cancel(set_temperature_thread);
     pthread_cancel(control_actuators_thread);
@@ -132,7 +121,6 @@ void handle_all_interruptions(int signal) {
 
     /* Close important system resources */
     handle_actuators_interruption();
-    clear_ncurses_alocation();
     exit(0);
 }
 
