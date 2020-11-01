@@ -19,6 +19,7 @@
 
 /* Global variables */
 struct bme280_dev device;
+// TODO: if has time, create top level i2c file.
 struct identifier id;
 
 /*!
@@ -164,4 +165,11 @@ float get_bme280_temperature()
     }
 
     return sensor_data.temperature;
+}
+
+/*!
+ * @brief Function used to close bme280 connection.
+ */
+void close_bme280() {
+    close(id.file_descriptor);
 }

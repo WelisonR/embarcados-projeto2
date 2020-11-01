@@ -120,6 +120,7 @@ void handle_all_interruptions(int signal) {
 
     /* Close important system resources */
     handle_actuators_interruption();
+    close_bme280();
     exit(0);
 }
 
@@ -134,6 +135,7 @@ void* set_system_temperatures() {
         if(external_temperature >= 0) {
             enviroment_data.external_temperature = external_temperature;
         }
+        printf("Temperatura BME280: %f\n", external_temperature);
     }
 }
 
