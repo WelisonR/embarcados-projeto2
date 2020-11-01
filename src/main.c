@@ -9,9 +9,9 @@
 /* Main functions */
 void handle_alarm();
 void handle_all_interruptions(int signal);
-void* set_system_temperatures();
-void* control_actuators();
-void* store_display_temperature();
+void *set_system_temperatures();
+void *control_actuators();
+void *store_display_temperature();
 
 /* Global variables */
 struct system_data enviroment_data;
@@ -30,7 +30,7 @@ pthread_mutex_t store_display_mutex;
 /*!
  * @brief This function starts execution of the program.
  */
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     signal(SIGALRM, handle_alarm);
     signal(SIGHUP, handle_all_interruptions);
@@ -93,7 +93,8 @@ void handle_alarm()
     pthread_mutex_unlock(&control_actuators_mutex);
 
     /* Unlock LCD display and data storage every 2s */
-    if (alarm_step == 0) {
+    if (alarm_step == 0)
+    {
         pthread_mutex_unlock(&store_display_mutex);
     }
 
@@ -104,7 +105,8 @@ void handle_alarm()
 /*!
  * @brief Function used to handle system interruptions and close all connections.
  */
-void handle_all_interruptions(int signal) {
+void handle_all_interruptions(int signal)
+{
     /* As first argument is zero, cancel alarms on Linux (and others) systems */
     ualarm(0, 0);
 
@@ -127,15 +129,37 @@ void handle_all_interruptions(int signal) {
 /*!
  * @brief Function used to set valid system temperatures (internal, external, reference)
  */
-void* set_system_temperatures() {
-    while(1) {
+void *set_system_temperatures()
+{
+    int sensors_length = 14;
+    gpio_state sensors[] = {
+        {LAMP_1, 0},
+        {LAMP_2, 0},
+        {LAMP_3, 0},
+        {LAMP_4, 0},
+        {AIR_CONDITIONING_1, 0},
+        {AIR_CONDITIONING_2, 0},
+        {PRESENCE_SENSOR_1, 0},
+        {PRESENCE_SENSOR_2, 0},
+        {TOUCH_SENSOR_1, 0},
+        {TOUCH_SENSOR_2, 0},
+        {TOUCH_SENSOR_3, 0},
+        {TOUCH_SENSOR_4, 0},
+        {TOUCH_SENSOR_5, 0},
+        {TOUCH_SENSOR_6, 0},
+    };
+
+    while (1)
+    {
         pthread_mutex_lock(&set_temperature_mutex);
 
-        float external_temperature = get_bme280_temperature();
-        if(external_temperature >= 0) {
-            enviroment_data.external_temperature = external_temperature;
-        }
-        printf("Temperatura BME280: %f\n", external_temperature);
+        update_gpio_state(sensors, sensors_length);
+
+        // float external_temperature = get_bme280_temperature();
+        // if(external_temperature >= 0) {
+        //     enviroment_data.external_temperature = external_temperature;
+        // }
+        // printf("Temperatura BME280: %f\n", external_temperature);
     }
 }
 
@@ -143,30 +167,21 @@ void* set_system_temperatures() {
  * @brief Function used to control actuators (ventilador and resistor)
  * based on internal temperature, reference temperature and hysteresis.
  */
-void* control_actuators() {
-    while(1) {
+void *control_actuators()
+{
+    while (1)
+    {
         pthread_mutex_lock(&control_actuators_mutex);
-
-        float reference_temperature = enviroment_data.reference_temperature;
-        float internal_temperature = enviroment_data.internal_temperature;
-        float hysteresis = enviroment_data.hysteresis;
-
-        if (internal_temperature > reference_temperature + hysteresis/2.0) {
-            enable_ventilator();
-            disable_resistence();
-        }
-        else if (internal_temperature < reference_temperature - hysteresis/2.0) {
-            disable_ventilator();
-            enable_resistence();
-        }
     }
 }
 
 /*!
  * @brief Function used display temperatures (internal, external and reference) into LCD.
  */
-void* store_display_temperature() {
-    while(1) {
+void *store_display_temperature()
+{
+    while (1)
+    {
         pthread_mutex_lock(&store_display_mutex);
         store_temperature_data(&enviroment_data);
     }
