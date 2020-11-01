@@ -2,7 +2,6 @@
 #include "bme280_api.h"
 #include "bcm2835_api.h"
 #include "system_monitor.h"
-#include "uart_api.h"
 
 #define ALARM_MAXIMUM_CYCLE 4
 #define ALARM_TIME_SIZE 500000
@@ -134,18 +133,6 @@ void* set_system_temperatures() {
         float external_temperature = get_bme280_temperature();
         if(external_temperature >= 0) {
             enviroment_data.external_temperature = external_temperature;
-        }
-
-        float internal_temperature = uart(ASK_INTERNAL_TEMPERATURE);
-        if(internal_temperature >= 0) {
-            enviroment_data.internal_temperature = internal_temperature;
-        }
-
-        if(enviroment_data.reference_temperature_type == IS_POTENTIOMETER_REFERENCE) {
-            float reference_temperature = uart(ASK_REFERENCE_TEMPERATURE);
-            if(reference_temperature >= 0) {
-                enviroment_data.reference_temperature = reference_temperature;
-            }
         }
     }
 }
