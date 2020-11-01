@@ -49,19 +49,4 @@ void set_current_formatted_hour(char *formatted_hour);
  */
 void store_temperature_data(struct system_data *temperatures);
 
-/*!
- * @brief Function used to store in csv file the measured temperatures.
- *
- * @param[in] file_descriptor                 :   file descriptor to use with lcd.
- * @param[in] temperature                     :   all system temperature.
- * @param[out] temperature in lcd             :   display temperature in 16x2 lcd display.
- *
- * temperature:
- * - internal_temperature.
- * - external_temperature.
- * - reference_temperature.
- *
- */
-void display_temperatures_lcd(int file_descriptor, struct system_data *temperature);
-
 #endif /* SYSTEM_MONITOR_H_ */

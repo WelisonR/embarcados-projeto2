@@ -1,5 +1,4 @@
 #include "system_monitor.h"
-#include "lcd.h"
 
 /*!
  * @brief This API used to save the current date (DD-MM-YYYY) into a string.
@@ -67,16 +66,3 @@ void store_temperature_data(struct system_data *temperatures) {
     fclose(fp);
 }
 
-void display_temperatures_lcd(int file_descriptor, struct system_data *temperature) {
-    char lcd_line1[17], lcd_line2[17];
-
-    sprintf(lcd_line1, "TI%.2f TE%.2f",
-        temperature->internal_temperature, temperature->external_temperature);
-    sprintf(lcd_line2, "TR%.2f", temperature->reference_temperature);
-
-    clear_lcd(file_descriptor);
-    set_cursor_location(file_descriptor, LINE1);
-    write_string(file_descriptor, lcd_line1);
-    set_cursor_location(file_descriptor, LINE2);
-    write_string(file_descriptor, lcd_line2);
-}

@@ -1,7 +1,6 @@
 #include <pthread.h>
 #include "bme280_api.h"
 #include "bcm2835_api.h"
-#include "lcd.h"
 #include "system_monitor.h"
 #include "uart_api.h"
 #include "system_windows.h"
@@ -18,7 +17,6 @@ void* store_display_temperature();
 
 /* Global variables */
 struct system_data enviroment_data;
-int lcd_file_descriptor;
 int alarm_step = 0;
 
 /* Program threads */
@@ -53,11 +51,6 @@ int main(int argc, char* argv[])
     enviroment_data.reference_temperature = 40;
     enviroment_data.hysteresis = 4;
     enviroment_data.reference_temperature_type = IS_POTENTIOMETER_REFERENCE;
-
-    /* Setup lcd display */
-    if (wiringPiSetup () == -1) exit (1);
-    lcd_file_descriptor = wiringPiI2CSetup(I2C_ADDR);
-    lcd_init(lcd_file_descriptor);
 
     /* Setup actuators devices */
     setup_devices();
@@ -118,7 +111,6 @@ void handle_alarm()
     alarm_step = (alarm_step + 1) % ALARM_MAXIMUM_CYCLE;
 }
 
-
 /*!
  * @brief Function used to handle system interruptions and close all connections.
  */
@@ -140,7 +132,6 @@ void handle_all_interruptions(int signal) {
 
     /* Close important system resources */
     handle_actuators_interruption();
-    clear_lcd(lcd_file_descriptor);
     clear_ncurses_alocation();
     exit(0);
 }
@@ -201,6 +192,5 @@ void* store_display_temperature() {
     while(1) {
         pthread_mutex_lock(&store_display_mutex);
         store_temperature_data(&enviroment_data);
-        display_temperatures_lcd(lcd_file_descriptor, &enviroment_data);
     }
 }
