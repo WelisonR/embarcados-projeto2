@@ -155,11 +155,11 @@ int8_t setup_bme280_read_mode();
 void setup_bme280();
 
 /*!
- * @brief Function used to get the temperature value from bme280 sensor.
+ * @brief Function used to set the temperature, pressure and humidity of bme280 sensor.
  *
- *  @return Float temperature (°C)
+ *  @param[in, out] sensor_data  : struct with temperature, pressure and humidity.
  *
  */
-float get_bme280_temperature();
+int8_t set_bme280_data(struct bme280_data *sensor_data);
 
 #endif /* BME280_API_H_ */

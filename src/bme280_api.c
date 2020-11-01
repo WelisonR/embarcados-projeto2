@@ -146,25 +146,22 @@ void setup_bme280()
 }
 
 /*!
- * @brief Function used to get the temperature value from bme280 sensor.
+ * @brief Function used to set the temperature, pressure and humidity of bme280 sensor.
  */
-float get_bme280_temperature()
+int8_t set_bme280_data(struct bme280_data *sensor_data)
 {
     uint32_t minimum_delay = bme280_cal_meas_delay(&device.settings);
-    /* Structure to store temperature, humidity and pressure from bme280 */
-    struct bme280_data sensor_data;
-
     user_delay_us(minimum_delay, device.intf_ptr);
     usleep(200000); /* Safe read */
 
-    int8_t response = bme280_get_sensor_data(BME280_ALL, &sensor_data, &device);
+    int8_t response = bme280_get_sensor_data(BME280_ALL, sensor_data, &device);
     if (response != BME280_OK)
     {
         fprintf(stderr, "Failed to get sensor data (code %+d).", response);
-        return -1.0f;
+        return BME280_E_COMM_FAIL;
     }
 
-    return sensor_data.temperature;
+    return BME280_OK;
 }
 
 /*!

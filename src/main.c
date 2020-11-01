@@ -14,7 +14,7 @@ void *control_actuators();
 void *store_display_temperature();
 
 /* Global variables */
-struct system_data enviroment_data;
+struct bme280_data sensor_data;
 int alarm_step = 0;
 
 /* Program threads */
@@ -40,13 +40,6 @@ int main(int argc, char *argv[])
     signal(SIGABRT, handle_all_interruptions);
     signal(SIGBUS, handle_all_interruptions);
     signal(SIGSEGV, handle_all_interruptions);
-
-    /* Setup initial state to system data */
-    enviroment_data.internal_temperature = 0;
-    enviroment_data.external_temperature = 0;
-    enviroment_data.reference_temperature = 40;
-    enviroment_data.hysteresis = 4;
-    enviroment_data.reference_temperature_type = IS_POTENTIOMETER_REFERENCE;
 
     /* Setup actuators devices */
     setup_devices();
@@ -131,35 +124,39 @@ void handle_all_interruptions(int signal)
  */
 void *set_system_temperatures()
 {
-    int sensors_length = 14;
-    gpio_state sensors[] = {
-        {LAMP_1, 0},
-        {LAMP_2, 0},
-        {LAMP_3, 0},
-        {LAMP_4, 0},
-        {AIR_CONDITIONING_1, 0},
-        {AIR_CONDITIONING_2, 0},
-        {PRESENCE_SENSOR_1, 0},
-        {PRESENCE_SENSOR_2, 0},
-        {TOUCH_SENSOR_1, 0},
-        {TOUCH_SENSOR_2, 0},
-        {TOUCH_SENSOR_3, 0},
-        {TOUCH_SENSOR_4, 0},
-        {TOUCH_SENSOR_5, 0},
-        {TOUCH_SENSOR_6, 0},
-    };
+    // int sensors_length = 14;
+    // gpio_state sensors[] = {
+    //     {LAMP_1, 0},
+    //     {LAMP_2, 0},
+    //     {LAMP_3, 0},
+    //     {LAMP_4, 0},
+    //     {AIR_CONDITIONING_1, 0},
+    //     {AIR_CONDITIONING_2, 0},
+    //     {PRESENCE_SENSOR_1, 0},
+    //     {PRESENCE_SENSOR_2, 0},
+    //     {TOUCH_SENSOR_1, 0},
+    //     {TOUCH_SENSOR_2, 0},
+    //     {TOUCH_SENSOR_3, 0},
+    //     {TOUCH_SENSOR_4, 0},
+    //     {TOUCH_SENSOR_5, 0},
+    //     {TOUCH_SENSOR_6, 0},
+    // };
 
     while (1)
     {
         pthread_mutex_lock(&set_temperature_mutex);
 
-        update_gpio_state(sensors, sensors_length);
+        // update_gpio_state(sensors, sensors_length);
 
-        // float external_temperature = get_bme280_temperature();
-        // if(external_temperature >= 0) {
-        //     enviroment_data.external_temperature = external_temperature;
-        // }
-        // printf("Temperatura BME280: %f\n", external_temperature);
+        int8_t response = set_bme280_data(&sensor_data);
+        if (response == BME280_OK)
+        {
+            printf("OK: T %f H %f P %f\n", sensor_data.temperature, sensor_data.humidity, sensor_data.pressure);
+        }
+        else
+        {
+            printf("Not OK!");
+        }
     }
 }
 
@@ -183,6 +180,5 @@ void *store_display_temperature()
     while (1)
     {
         pthread_mutex_lock(&store_display_mutex);
-        store_temperature_data(&enviroment_data);
     }
 }
