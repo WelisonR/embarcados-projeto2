@@ -137,6 +137,5 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Ignore bin and objects generated from compilation
+# Ignore objects generated from compilation
 *.o
-bin

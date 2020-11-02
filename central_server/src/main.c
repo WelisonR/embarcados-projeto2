@@ -31,10 +31,10 @@ struct system_data
     struct bme280_data bme280_data;
 };
 
-void TrataClienteTCP(int socketCliente)
+void process_tcp_client(int client_socket)
 {
     struct system_data all_system_data;
-    int received_length = recv(socketCliente, (void *)&all_system_data, sizeof(struct system_data), 0);
+    int received_length = recv(client_socket, (void *)&all_system_data, sizeof(struct system_data), 0);
     if(received_length != sizeof(struct system_data)) {
         printf("Houve um problema ao receber os dados.");
     }
@@ -95,7 +95,7 @@ int main()
                                     &client_length)) < 0)
             printf("Falha no Accept\n");
 
-        TrataClienteTCP(client_socket);
+        process_tcp_client(client_socket);
 
         close(client_socket);
     }
