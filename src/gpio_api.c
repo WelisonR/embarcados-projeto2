@@ -65,6 +65,25 @@ void update_gpio_state(gpio_state *sensors, int sensors_length)
 }
 
 /*!
+ * @brief Function used to invert a device state based on an option (check gpio_api.h).
+ */
+void invert_device_state(gpio_state *devices, int option)
+{
+    if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
+    {
+        bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, !devices[AIR_CONDITIONING_1_POS].state);
+        bcm2835_gpio_write(devices[AIR_CONDITIONING_2_POS].gpio, !devices[AIR_CONDITIONING_2_POS].state);
+        devices[AIR_CONDITIONING_1_POS].state = !devices[AIR_CONDITIONING_1_POS].state;
+        devices[AIR_CONDITIONING_2_POS].state = !devices[AIR_CONDITIONING_2_POS].state;
+    }
+    else
+    {
+        bcm2835_gpio_write(devices[option].gpio, !devices[option].state);
+        devices[option].state = !devices[option].state;
+    }
+}
+
+/*!
  * @brief Function used to handle program interruption, disable devices and exit.
  */
 void handle_actuators_interruption()

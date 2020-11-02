@@ -136,28 +136,32 @@ void *set_environment_data()
  */
 void *update_actuators()
 {
-    // int sensors_length = 14;
-    int updatable_sensors_length = 8;
+    // int devices_length = 6;
+    // gpio_state devices[] = {
+    //     {LAMP_1, LOW},
+    //     {LAMP_2, LOW},
+    //     {LAMP_3, LOW},
+    //     {LAMP_4, LOW},
+    //     {AIR_CONDITIONING_1, LOW},
+    //     {AIR_CONDITIONING_2, LOW},
+    // };
+
+    int sensors_length = 8;
     gpio_state sensors[] = {
-        {PRESENCE_SENSOR_1, 0},
-        {PRESENCE_SENSOR_2, 0},
-        {TOUCH_SENSOR_1, 0},
-        {TOUCH_SENSOR_2, 0},
-        {TOUCH_SENSOR_3, 0},
-        {TOUCH_SENSOR_4, 0},
-        {TOUCH_SENSOR_5, 0},
-        {TOUCH_SENSOR_6, 0},
-        {LAMP_1, 0},
-        {LAMP_2, 0},
-        {LAMP_3, 0},
-        {LAMP_4, 0},
-        {AIR_CONDITIONING_1, 0},
-        {AIR_CONDITIONING_2, 0},
+        {PRESENCE_SENSOR_1, LOW},
+        {PRESENCE_SENSOR_2, LOW},
+        {TOUCH_SENSOR_1, LOW},
+        {TOUCH_SENSOR_2, LOW},
+        {TOUCH_SENSOR_3, LOW},
+        {TOUCH_SENSOR_4, LOW},
+        {TOUCH_SENSOR_5, LOW},
+        {TOUCH_SENSOR_6, LOW},
     };
     while (1)
     {
         pthread_mutex_lock(&update_actuators_mutex);
 
-        update_gpio_state(sensors, updatable_sensors_length);
+        update_gpio_state(sensors, sensors_length);
+        // TODO: informar ao servidor central se algum sensor está ativado
     }
 }
