@@ -90,7 +90,7 @@ void set_gpio_devices_low(gpio_state *devices, int devices_length)
 {
     for (int i = 0; i < devices_length; i++)
     {
-        devices[i].state = LOW;
+        bcm2835_gpio_write(devices[i].gpio, LOW);
     }
 }
 
