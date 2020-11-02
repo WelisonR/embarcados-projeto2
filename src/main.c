@@ -3,29 +3,26 @@
 #include "gpio_api.h"
 #include "system_monitor.h"
 
-#define ALARM_MAXIMUM_CYCLE 4
-#define ALARM_TIME_SIZE 500000
+#define ALARM_MAXIMUM_CYCLE 10
+#define ALARM_TIME_SIZE 100000
 
 /* Main functions */
 void handle_alarm();
 void handle_all_interruptions(int signal);
-void *set_system_temperatures();
-void *control_actuators();
-void *store_display_temperature();
+void *set_environment_data();
+void *update_actuators();
 
 /* Global variables */
 struct bme280_data sensor_data;
 int alarm_step = 0;
 
 /* Program threads */
-pthread_t set_temperature_thread;
-pthread_t control_actuators_thread;
-pthread_t store_display_thead;
+pthread_t set_environment_thread;
+pthread_t update_actuators_thread;
 
 /* pthreads mutex controlled by alarm */
-pthread_mutex_t set_temperature_mutex;
-pthread_mutex_t control_actuators_mutex;
-pthread_mutex_t store_display_mutex;
+pthread_mutex_t set_environment_data_mutex;
+pthread_mutex_t update_actuators_mutex;
 
 /*!
  * @brief This function starts execution of the program.
@@ -48,19 +45,16 @@ int main(int argc, char *argv[])
     setup_bme280();
 
     /* Initialize mutex to threads */
-    pthread_mutex_init(&set_temperature_mutex, NULL);
-    pthread_mutex_init(&control_actuators_mutex, NULL);
-    pthread_mutex_init(&store_display_mutex, NULL);
+    pthread_mutex_init(&set_environment_data_mutex, NULL);
+    pthread_mutex_init(&update_actuators_mutex, NULL);
 
     /* Lock thread executions */
-    pthread_mutex_lock(&set_temperature_mutex);
-    pthread_mutex_lock(&control_actuators_mutex);
-    pthread_mutex_lock(&store_display_mutex);
+    pthread_mutex_lock(&set_environment_data_mutex);
+    pthread_mutex_lock(&update_actuators_mutex);
 
     /* Create system threads */
-    pthread_create(&set_temperature_thread, NULL, &set_system_temperatures, NULL);
-    pthread_create(&control_actuators_thread, NULL, &control_actuators, NULL);
-    pthread_create(&store_display_thead, NULL, &store_display_temperature, NULL);
+    pthread_create(&set_environment_thread, NULL, &set_environment_data, NULL);
+    pthread_create(&update_actuators_thread, NULL, &update_actuators, NULL);
 
     usleep(10000); /* Wait thread setup of ncurses input region */
 
@@ -68,30 +62,28 @@ int main(int argc, char *argv[])
     ualarm(ALARM_TIME_SIZE, ALARM_TIME_SIZE);
 
     /* Join and finalize threads */
-    pthread_join(set_temperature_thread, NULL);
-    pthread_join(control_actuators_thread, NULL);
-    pthread_join(store_display_thead, NULL);
+    pthread_join(set_environment_thread, NULL);
+    pthread_join(update_actuators_thread, NULL);
 
     return 0;
 }
 
 /*!
- * @brief Function used to handle alarm that occurs every 500ms (one step)
+ * @brief Function used to handle alarm that occurs every 100ms (one step)
  * and open threads execution.
  */
 void handle_alarm()
 {
-    /* Unlock set temperature and control actuators every 500ms */
-    pthread_mutex_unlock(&set_temperature_mutex);
-    pthread_mutex_unlock(&control_actuators_mutex);
+    /* Unlock set temperature and control actuators every 100ms */
+    pthread_mutex_unlock(&set_environment_data_mutex);
 
-    /* Unlock LCD display and data storage every 2s */
+    /* Unlock LCD display and data storage every 1s */
     if (alarm_step == 0)
     {
-        pthread_mutex_unlock(&store_display_mutex);
+        pthread_mutex_unlock(&update_actuators_mutex);
     }
 
-    /* Control thread execution based on step (1, 2, 3, 4) */
+    /* Control thread execution based on 1s cycles */
     alarm_step = (alarm_step + 1) % ALARM_MAXIMUM_CYCLE;
 }
 
@@ -104,14 +96,12 @@ void handle_all_interruptions(int signal)
     ualarm(0, 0);
 
     /* Cancel all threads activies */
-    pthread_cancel(store_display_thead);
-    pthread_cancel(set_temperature_thread);
-    pthread_cancel(control_actuators_thread);
+    pthread_cancel(set_environment_thread);
+    pthread_cancel(update_actuators_thread);
 
     /* Destroy thread mutex */
-    pthread_mutex_destroy(&set_temperature_mutex);
-    pthread_mutex_destroy(&control_actuators_mutex);
-    pthread_mutex_destroy(&store_display_mutex);
+    pthread_mutex_destroy(&set_environment_data_mutex);
+    pthread_mutex_destroy(&update_actuators_mutex);
 
     /* Close important system resources */
     handle_actuators_interruption();
@@ -120,65 +110,54 @@ void handle_all_interruptions(int signal)
 }
 
 /*!
- * @brief Function used to set valid system temperatures (internal, external, reference)
+ * @brief Function used to set valid system temperatura, humidity and pressure
  */
-void *set_system_temperatures()
+void *set_environment_data()
 {
-    // int sensors_length = 14;
-    // gpio_state sensors[] = {
-    //     {LAMP_1, 0},
-    //     {LAMP_2, 0},
-    //     {LAMP_3, 0},
-    //     {LAMP_4, 0},
-    //     {AIR_CONDITIONING_1, 0},
-    //     {AIR_CONDITIONING_2, 0},
-    //     {PRESENCE_SENSOR_1, 0},
-    //     {PRESENCE_SENSOR_2, 0},
-    //     {TOUCH_SENSOR_1, 0},
-    //     {TOUCH_SENSOR_2, 0},
-    //     {TOUCH_SENSOR_3, 0},
-    //     {TOUCH_SENSOR_4, 0},
-    //     {TOUCH_SENSOR_5, 0},
-    //     {TOUCH_SENSOR_6, 0},
-    // };
+    struct bme280_data sensor_data_temp;
 
     while (1)
     {
-        pthread_mutex_lock(&set_temperature_mutex);
+        pthread_mutex_lock(&set_environment_data_mutex);
 
-        // update_gpio_state(sensors, sensors_length);
-
-        int8_t response = set_bme280_data(&sensor_data);
+        int8_t response = set_bme280_data(&sensor_data_temp);
         if (response == BME280_OK)
         {
-            printf("OK: T %f H %f P %f\n", sensor_data.temperature, sensor_data.humidity, sensor_data.pressure);
-        }
-        else
-        {
-            printf("Not OK!");
+            sensor_data.temperature = sensor_data_temp.temperature;
+            sensor_data.humidity = sensor_data_temp.humidity;
+            sensor_data.pressure = sensor_data_temp.pressure;
         }
     }
 }
 
 /*!
- * @brief Function used to control actuators (ventilador and resistor)
- * based on internal temperature, reference temperature and hysteresis.
+ * @brief Function used to update actuators of continuous tracking
+ * as presence sensor and touch sensor.
  */
-void *control_actuators()
+void *update_actuators()
 {
+    // int sensors_length = 14;
+    int updatable_sensors_length = 8;
+    gpio_state sensors[] = {
+        {PRESENCE_SENSOR_1, 0},
+        {PRESENCE_SENSOR_2, 0},
+        {TOUCH_SENSOR_1, 0},
+        {TOUCH_SENSOR_2, 0},
+        {TOUCH_SENSOR_3, 0},
+        {TOUCH_SENSOR_4, 0},
+        {TOUCH_SENSOR_5, 0},
+        {TOUCH_SENSOR_6, 0},
+        {LAMP_1, 0},
+        {LAMP_2, 0},
+        {LAMP_3, 0},
+        {LAMP_4, 0},
+        {AIR_CONDITIONING_1, 0},
+        {AIR_CONDITIONING_2, 0},
+    };
     while (1)
     {
-        pthread_mutex_lock(&control_actuators_mutex);
-    }
-}
+        pthread_mutex_lock(&update_actuators_mutex);
 
-/*!
- * @brief Function used display temperatures (internal, external and reference) into LCD.
- */
-void *store_display_temperature()
-{
-    while (1)
-    {
-        pthread_mutex_lock(&store_display_mutex);
+        update_gpio_state(sensors, updatable_sensors_length);
     }
 }
