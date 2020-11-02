@@ -1,5 +1,5 @@
 CC = gcc
-LDFLAGS =  -lbcm2835 -lpthread -lmenu -lncurses
+LDFLAGS = -lpthread -lmenu -lncurses
 BLDDIR = .
 INCDIR = $(BLDDIR)/inc
 SRCDIR = $(BLDDIR)/src
@@ -12,7 +12,7 @@ EXE = bin/bin
 all: clean $(EXE) 
 
 $(EXE): $(OBJ) 
-	$(CC) $(LDFLAGS) $(OBJDIR)/*.o -o $@ -lbcm2835 -lpthread -lmenu -lncurses
+	$(CC) $(LDFLAGS) $(OBJDIR)/*.o -o $@ -lpthread -lmenu -lncurses
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p $(@D)
