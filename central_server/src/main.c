@@ -33,7 +33,7 @@ int create_socket()
 
 void build_server_struct(struct sockaddr_in *server_address)
 {
-    memset(server_address, 0, sizeof(server_address)); // Zerando a estrutura de dados
+    memset(server_address, 0, sizeof(struct sockaddr_in)); // Zerando a estrutura de dados
     server_address->sin_family = AF_INET;
     server_address->sin_addr.s_addr = htonl(INADDR_ANY);
     server_address->sin_port = htons(SERVER_PORT);
