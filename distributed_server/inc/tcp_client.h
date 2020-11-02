@@ -25,12 +25,10 @@ int create_socket();
 /*!
  * @brief This function is used to build the server address structure.
  *
- * @param[in, out] server_address    :   struct with server address information.
- * 
  * @return void.
  *
  */
-void build_server_struct(struct sockaddr_in *server_address);
+void build_server_struct();
 
 /*!
  * @brief This function is used to setup server-client connection.
@@ -41,35 +39,32 @@ void build_server_struct(struct sockaddr_in *server_address);
  * @return void.
  *
  */
-void connect_to_server(int client_socket, struct sockaddr_in *server_address);
+void connect_to_server();
 
 /*!
  * @brief This function is used to setup socket configurations.
  * 
- * @return int with socket identifier.
+ * @return void.
  *
  */
-int initialize_socket();
+void initialize_socket();
 
 /*!
  * @brief This functions is used to send system data across socket connection.
  *
- * @param[in] client_socket         :   identifier to client socket
  * @param[in] transmitted_data      :   pointer to struct of system_data (all system data)
  * 
  * @return void.
  *
  */
-void send_data(int client_socket, struct system_data *transmitted_data);
+void send_data(struct system_data *transmitted_data);
 
 /*!
  * @brief This function is used to close socket connection.
  *
- * @param[in] client_socket         :   identifier to client socket
- * 
  * @return void.
  *
  */
-void close_socket(int client_socket);
+void close_socket();
 
 #endif /* TCP_CLIENT_H_ */

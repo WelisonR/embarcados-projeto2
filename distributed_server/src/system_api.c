@@ -6,7 +6,6 @@
 
 /* Global variables */
 int alarm_step = 0;
-int tcp_client = -1;
 struct system_data all_system_data = {
     {{LAMP_1, LOW},
      {LAMP_2, LOW},
@@ -49,7 +48,7 @@ void initialize_system()
     setup_bme280();
 
     /* Setup client socket */
-    tcp_client = initialize_socket();
+    initialize_socket();
 
     /* Initialize mutex to threads */
     pthread_mutex_init(&set_environment_data_mutex, NULL);
@@ -106,7 +105,7 @@ void handle_system_interruption(int signal)
     ualarm(0, 0);
 
     /* Close socket connection */
-    close_socket(tcp_client);
+    close_socket();
 
     /* Cancel all threads activies */
     pthread_cancel(set_environment_thread);
@@ -131,7 +130,7 @@ void *send_system_data()
     while (1)
     {
         pthread_mutex_lock(&send_system_data_mutex);
-        send_data(tcp_client, &all_system_data);
+        send_data(&all_system_data);
     }
 }
 
