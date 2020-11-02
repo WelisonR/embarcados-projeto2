@@ -84,9 +84,21 @@ void invert_device_state(gpio_state *devices, int option)
 }
 
 /*!
+ * @brief Function used to setup all devices (lamp and air) to LOW
+ */
+void set_gpio_devices_low(gpio_state *devices, int devices_length)
+{
+    for (int i = 0; i < devices_length; i++)
+    {
+        devices[i].state = LOW;
+    }
+}
+
+/*!
  * @brief Function used to handle program interruption, disable devices and exit.
  */
-void handle_actuators_interruption()
+void handle_actuators_interruption(gpio_state *devices, int devices_length)
 {
+    set_gpio_devices_low(devices, devices_length);
     bcm2835_close();
 }

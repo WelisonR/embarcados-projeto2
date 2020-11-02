@@ -16,6 +16,16 @@ void *update_actuators();
 struct bme280_data sensor_data;
 int alarm_step = 0;
 
+int devices_length = 6;
+gpio_state devices[] = {
+    {LAMP_1, LOW},
+    {LAMP_2, LOW},
+    {LAMP_3, LOW},
+    {LAMP_4, LOW},
+    {AIR_CONDITIONING_1, LOW},
+    {AIR_CONDITIONING_2, LOW},
+};
+
 /* Program threads */
 pthread_t set_environment_thread;
 pthread_t update_actuators_thread;
@@ -40,6 +50,7 @@ int main(int argc, char *argv[])
 
     /* Setup actuators devices */
     setup_devices();
+    set_gpio_devices_low(devices, devices_length);
 
     /* Setup bme280 - External temperature */
     setup_bme280();
@@ -104,7 +115,7 @@ void handle_all_interruptions(int signal)
     pthread_mutex_destroy(&update_actuators_mutex);
 
     /* Close important system resources */
-    handle_actuators_interruption();
+    handle_actuators_interruption(devices, devices_length);
     close_bme280();
     exit(0);
 }
@@ -136,16 +147,6 @@ void *set_environment_data()
  */
 void *update_actuators()
 {
-    // int devices_length = 6;
-    // gpio_state devices[] = {
-    //     {LAMP_1, LOW},
-    //     {LAMP_2, LOW},
-    //     {LAMP_3, LOW},
-    //     {LAMP_4, LOW},
-    //     {AIR_CONDITIONING_1, LOW},
-    //     {AIR_CONDITIONING_2, LOW},
-    // };
-
     int sensors_length = 8;
     gpio_state sensors[] = {
         {PRESENCE_SENSOR_1, LOW},

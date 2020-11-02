@@ -98,8 +98,25 @@ void update_gpio_state(gpio_state *sensors, int sensors_length);
 void invert_device_state(gpio_state *devices, int option);
 
 /*!
- * @brief Function used to handle program interruption, disable devices and exit.
+ * @brief Function used to setup all devices (lamp and air) to LOW
+ * 
+ * @param[in, out] devices          :       devices array with 6 items (lamp and air)
+ * @param[in] devices_length        :       length of devices array
+ * 
+ * @return void.
+ * 
  */
-void handle_actuators_interruption();
+void set_gpio_devices_low(gpio_state *devices, int devices_length);
+
+/*!
+ * @brief Function used to handle program interruption, disable devices and exit.
+ * 
+ * @param[in, out] devices          :       devices array with 6 items (lamp and air)
+ * @param[in] devices_length        :       length of devices array
+ * 
+ * @return void.
+ * 
+ */
+void handle_actuators_interruption(gpio_state *devices, int devices_length);
 
 #endif /* BCM2835_API_H_ */
