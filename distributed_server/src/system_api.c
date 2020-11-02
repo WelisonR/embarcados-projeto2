@@ -111,7 +111,6 @@ void handle_system_interruption(int signal)
     /* Cancel all threads activies */
     pthread_cancel(set_environment_thread);
     pthread_cancel(update_actuators_thread);
-    pthread_cancel(send_system_data_thread);
 
     /* Destroy thread mutex */
     pthread_mutex_destroy(&set_environment_data_mutex);
