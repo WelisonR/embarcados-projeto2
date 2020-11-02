@@ -9,6 +9,7 @@ int create_socket()
     if (client_socket < 0)
     {
         printf("Erro no socket()\n");
+        raise(SIGABRT);
     }
 
     return client_socket;

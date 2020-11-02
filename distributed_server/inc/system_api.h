@@ -45,6 +45,12 @@ void handle_alarm();
  */
 void handle_system_interruption(int signal);
 
+
+/*!
+ * @brief Function used to send system data across tcp/ip connection.
+ */
+void *send_system_data();
+
 /*!
  * @brief Function used to set valid system temperatura, humidity and pressure
  */
