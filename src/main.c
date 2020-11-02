@@ -5,6 +5,8 @@
 
 #define ALARM_MAXIMUM_CYCLE 10
 #define ALARM_TIME_SIZE 100000
+#define DEVICES_LENGTH 6
+#define SENSORS_LENGTH 8
 
 /* Main functions */
 void handle_alarm();
@@ -13,18 +15,31 @@ void *set_environment_data();
 void *update_actuators();
 
 /* Global variables */
-struct bme280_data sensor_data;
 int alarm_step = 0;
 
-int devices_length = 6;
-gpio_state devices[] = {
-    {LAMP_1, LOW},
-    {LAMP_2, LOW},
-    {LAMP_3, LOW},
-    {LAMP_4, LOW},
-    {AIR_CONDITIONING_1, LOW},
-    {AIR_CONDITIONING_2, LOW},
+struct system_data
+{
+    gpio_state devices[DEVICES_LENGTH];
+    gpio_state sensors[SENSORS_LENGTH];
+    struct bme280_data bme280_data;
 };
+
+struct system_data all_system_data = {
+    {{LAMP_1, LOW},
+     {LAMP_2, LOW},
+     {LAMP_3, LOW},
+     {LAMP_4, LOW},
+     {AIR_CONDITIONING_1, LOW},
+     {AIR_CONDITIONING_2, LOW}},
+    {{PRESENCE_SENSOR_1, LOW},
+     {PRESENCE_SENSOR_2, LOW},
+     {TOUCH_SENSOR_1, LOW},
+     {TOUCH_SENSOR_2, LOW},
+     {TOUCH_SENSOR_3, LOW},
+     {TOUCH_SENSOR_4, LOW},
+     {TOUCH_SENSOR_5, LOW},
+     {TOUCH_SENSOR_6, LOW}},
+    {0.0, 0.0, 0.0}};
 
 /* Program threads */
 pthread_t set_environment_thread;
@@ -50,7 +65,7 @@ int main(int argc, char *argv[])
 
     /* Setup actuators devices */
     setup_devices();
-    set_gpio_devices_low(devices, devices_length);
+    set_gpio_devices_low(all_system_data.devices, DEVICES_LENGTH);
 
     /* Setup bme280 - External temperature */
     setup_bme280();
@@ -115,7 +130,7 @@ void handle_all_interruptions(int signal)
     pthread_mutex_destroy(&update_actuators_mutex);
 
     /* Close important system resources */
-    handle_actuators_interruption(devices, devices_length);
+    handle_actuators_interruption(all_system_data.devices, DEVICES_LENGTH);
     close_bme280();
     exit(0);
 }
@@ -134,9 +149,9 @@ void *set_environment_data()
         int8_t response = set_bme280_data(&sensor_data_temp);
         if (response == BME280_OK)
         {
-            sensor_data.temperature = sensor_data_temp.temperature;
-            sensor_data.humidity = sensor_data_temp.humidity;
-            sensor_data.pressure = sensor_data_temp.pressure;
+            all_system_data.bme280_data.temperature = sensor_data_temp.temperature;
+            all_system_data.bme280_data.humidity = sensor_data_temp.humidity;
+            all_system_data.bme280_data.pressure = sensor_data_temp.pressure;
         }
     }
 }
@@ -147,22 +162,11 @@ void *set_environment_data()
  */
 void *update_actuators()
 {
-    int sensors_length = 8;
-    gpio_state sensors[] = {
-        {PRESENCE_SENSOR_1, LOW},
-        {PRESENCE_SENSOR_2, LOW},
-        {TOUCH_SENSOR_1, LOW},
-        {TOUCH_SENSOR_2, LOW},
-        {TOUCH_SENSOR_3, LOW},
-        {TOUCH_SENSOR_4, LOW},
-        {TOUCH_SENSOR_5, LOW},
-        {TOUCH_SENSOR_6, LOW},
-    };
     while (1)
     {
         pthread_mutex_lock(&update_actuators_mutex);
 
-        update_gpio_state(sensors, sensors_length);
+        update_gpio_state(all_system_data.sensors, SENSORS_LENGTH);
         // TODO: informar ao servidor central se algum sensor está ativado
     }
 }
