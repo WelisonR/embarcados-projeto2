@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     signal(SIGABRT, handle_all_interruptions);
     signal(SIGBUS, handle_all_interruptions);
     signal(SIGSEGV, handle_all_interruptions);
+    signal(SIGPIPE, handle_all_interruptions);
 
     initialize_system();
 
