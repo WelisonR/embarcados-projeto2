@@ -47,9 +47,6 @@ void initialize_system()
     /* Setup bme280 - External temperature */
     setup_bme280();
 
-    /* Setup client socket */
-    initialize_socket();
-
     /* Initialize mutex to threads */
     pthread_mutex_init(&set_environment_data_mutex, NULL);
     pthread_mutex_init(&update_actuators_mutex, NULL);

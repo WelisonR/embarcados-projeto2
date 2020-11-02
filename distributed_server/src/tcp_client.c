@@ -57,6 +57,7 @@ void initialize_socket()
  */
 void send_data(struct system_data *transmitted_data)
 {
+    initialize_socket();
     connect_to_server();
     int transmitted_bytes = send(client_socket, (void *)transmitted_data, sizeof(struct system_data), 0);
     if (transmitted_bytes != sizeof(struct system_data))
