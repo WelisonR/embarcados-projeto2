@@ -5,19 +5,52 @@
 #include <string.h>
 #include <unistd.h>
 
+/* System definitions */
 #define SERVER_PORT 10023
+#define DEVICES_LENGTH 6
+#define SENSORS_LENGTH 8
 
-struct data {
-    float val1;
-    float val2;
+// TODO: top level structures
+struct bme280_data
+{
+    double pressure;
+    double temperature;
+    double humidity;
+};
+
+typedef struct
+{
+    int gpio;
+    int state;
+} gpio_state;
+
+struct system_data
+{
+    gpio_state devices[DEVICES_LENGTH];
+    gpio_state sensors[SENSORS_LENGTH];
+    struct bme280_data bme280_data;
 };
 
 void TrataClienteTCP(int socketCliente)
 {
-    struct data dt;
-    int tamanhoRecebido = recv(socketCliente, (void *) &dt, sizeof(dt), 0);
+    struct system_data all_system_data;
+    int received_length = recv(socketCliente, (void *)&all_system_data, sizeof(struct system_data), 0);
+    if(received_length != sizeof(struct system_data)) {
+        printf("Houve um problema ao receber os dados.");
+    }
 
-    printf("Valores recebidos: %f %f\n", dt.val1, dt.val2);
+    for (int i = 0; i < DEVICES_LENGTH; i++)
+    {
+        printf("Device %d: %d\n", all_system_data.devices[i].gpio, all_system_data.devices[i].state);
+    }
+
+    for (int i = 0; i < SENSORS_LENGTH; i++)
+    {
+        printf("Sensor %d: %d\n", all_system_data.sensors[i].gpio, all_system_data.sensors[i].state);
+    }
+
+    printf("T %f U %f P %f", all_system_data.bme280_data.temperature,
+           all_system_data.bme280_data.humidity, all_system_data.bme280_data.temperature);
 }
 
 int create_socket()
@@ -39,11 +72,10 @@ void build_server_struct(struct sockaddr_in *server_address)
     server_address->sin_port = htons(SERVER_PORT);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
     int client_socket;
-    struct sockaddr_in server_address;
-    struct sockaddr_in client_address;
+    struct sockaddr_in server_address, client_address;
     unsigned int client_length;
 
     int server_socket = create_socket();
@@ -63,10 +95,12 @@ int main(int argc, char *argv[])
                                     &client_length)) < 0)
             printf("Falha no Accept\n");
 
-        printf("Conexão do Cliente %s\n", inet_ntoa(client_address.sin_addr));
-
         TrataClienteTCP(client_socket);
+
         close(client_socket);
     }
+
     close(server_socket);
+
+    return 0;
 }
