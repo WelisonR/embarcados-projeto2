@@ -33,7 +33,7 @@ int create_socket();
 void build_server_struct(struct sockaddr_in *server_address);
 
 /*!
- * @brief This function is used to save the current hour (HH:MM:SS) into a string.
+ * @brief This function is used to setup server-client connection.
  *
  * @param[in] client_socket             :   socket to connect with server.
  * @param[in, out] server_address       :   struct with server address information.
