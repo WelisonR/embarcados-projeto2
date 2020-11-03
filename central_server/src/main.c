@@ -1,130 +1,34 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "tcp_server.h"
+#include <signal.h>
 
-/* System definitions */
-#define SERVER_PORT 10023
-#define DEVICES_LENGTH 6
-#define SENSORS_LENGTH 8
+struct system_data all_system_data;
 
-// TODO: top level structures
-struct bme280_data
-{
-    double pressure;
-    double temperature;
-    double humidity;
-};
+/* Main functions */
+void handle_all_interruptions(int signal);
 
-typedef struct
-{
-    int gpio;
-    int state;
-} gpio_state;
+/*!
+ * @brief This function starts execution of the program.
+ */
+int main(int argc, char *argv[]) {
+    signal(SIGHUP, handle_all_interruptions);
+    signal(SIGINT, handle_all_interruptions);
+    signal(SIGQUIT, handle_all_interruptions);
+    signal(SIGILL, handle_all_interruptions);
+    signal(SIGABRT, handle_all_interruptions);
+    signal(SIGBUS, handle_all_interruptions);
+    signal(SIGSEGV, handle_all_interruptions);
+    signal(SIGPIPE, handle_all_interruptions);
 
-struct system_data
-{
-    gpio_state devices[DEVICES_LENGTH];
-    gpio_state sensors[SENSORS_LENGTH];
-    struct bme280_data bme280_data;
-};
-
-int client_socket;
-int server_socket;
-
-void process_tcp_client()
-{
-    struct system_data all_system_data;
-    int received_length = recv(client_socket, (void *)&all_system_data, sizeof(struct system_data), 0);
-    if (received_length != sizeof(struct system_data))
-    {
-        printf("Houve um problema ao receber os dados.");
-    }
-
-    for (int i = 0; i < DEVICES_LENGTH; i++)
-    {
-        printf("Device %d: %d\n", all_system_data.devices[i].gpio, all_system_data.devices[i].state);
-    }
-
-    for (int i = 0; i < SENSORS_LENGTH; i++)
-    {
-        printf("Sensor %d: %d\n", all_system_data.sensors[i].gpio, all_system_data.sensors[i].state);
-    }
-
-    printf("T %f U %f P %f", all_system_data.bme280_data.temperature,
-           all_system_data.bme280_data.humidity, all_system_data.bme280_data.temperature);
-}
-
-int create_socket()
-{
-    int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (tcp_socket < 0)
-    {
-        printf("Erro no socket()\n");
-    }
-
-    return tcp_socket;
-}
-
-void build_server_struct(struct sockaddr_in *server_address)
-{
-    memset(server_address, 0, sizeof(struct sockaddr_in)); // Zerando a estrutura de dados
-    server_address->sin_family = AF_INET;
-    server_address->sin_addr.s_addr = htonl(INADDR_ANY);
-    server_address->sin_port = htons(SERVER_PORT);
-}
-
-void bind_server(struct sockaddr_in *server_address)
-{
-    int status = bind(server_socket, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
-    if (status < 0)
-    {
-        printf("Falha no Bind\n");
-    }
-}
-
-void listen_server()
-{
-    int queue_size = 100;
-    int status = listen(server_socket, queue_size);
-    if (status < 0)
-    {
-        printf("Falha no Listen\n");
-    }
-}
-
-void handle_server_close() {
-    close(client_socket);
-    close(server_socket);
-}
-
-int main()
-{
-    struct sockaddr_in server_address, client_address;
-    unsigned int client_length;
-
-    server_socket = create_socket();
-    build_server_struct(&server_address);
-    bind_server(&server_address);
-    listen_server();
-
-    while (1)
-    {
-        client_length = sizeof(client_address);
-        client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_length);
-        if (client_socket < 0)
-        {
-            printf("Falha no Accept\n");
-        }
-
-        process_tcp_client(client_socket);
-
-        close(client_socket);
-    }
-
-    close(server_socket);
+    initialize_tcp_server(&all_system_data);
 
     return 0;
+}
+
+/*!
+ * @brief Function used to handle system interruptions and close all connections.
+ */
+void handle_all_interruptions(int signal)
+{
+    handle_server_close();
+    exit(0);
 }
