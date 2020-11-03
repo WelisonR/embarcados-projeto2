@@ -31,11 +31,15 @@ struct system_data
     struct bme280_data bme280_data;
 };
 
-void process_tcp_client(int client_socket)
+int client_socket;
+int server_socket;
+
+void process_tcp_client()
 {
     struct system_data all_system_data;
     int received_length = recv(client_socket, (void *)&all_system_data, sizeof(struct system_data), 0);
-    if(received_length != sizeof(struct system_data)) {
+    if (received_length != sizeof(struct system_data))
+    {
         printf("Houve um problema ao receber os dados.");
     }
 
@@ -55,13 +59,13 @@ void process_tcp_client(int client_socket)
 
 int create_socket()
 {
-    int client_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (client_socket < 0)
+    int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (tcp_socket < 0)
     {
         printf("Erro no socket()\n");
     }
 
-    return client_socket;
+    return tcp_socket;
 }
 
 void build_server_struct(struct sockaddr_in *server_address)
@@ -72,28 +76,48 @@ void build_server_struct(struct sockaddr_in *server_address)
     server_address->sin_port = htons(SERVER_PORT);
 }
 
+void bind_server(struct sockaddr_in *server_address)
+{
+    int status = bind(server_socket, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
+    if (status < 0)
+    {
+        printf("Falha no Bind\n");
+    }
+}
+
+void listen_server()
+{
+    int queue_size = 100;
+    int status = listen(server_socket, queue_size);
+    if (status < 0)
+    {
+        printf("Falha no Listen\n");
+    }
+}
+
+void handle_server_close() {
+    close(client_socket);
+    close(server_socket);
+}
+
 int main()
 {
-    int client_socket;
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;
 
-    int server_socket = create_socket();
+    server_socket = create_socket();
     build_server_struct(&server_address);
-
-    if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
-        printf("Falha no Bind\n");
-
-    if (listen(server_socket, 10) < 0)
-        printf("Falha no Listen\n");
+    bind_server(&server_address);
+    listen_server();
 
     while (1)
     {
         client_length = sizeof(client_address);
-        if ((client_socket = accept(server_socket,
-                                    (struct sockaddr *)&client_address,
-                                    &client_length)) < 0)
+        client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_length);
+        if (client_socket < 0)
+        {
             printf("Falha no Accept\n");
+        }
 
         process_tcp_client(client_socket);
 
