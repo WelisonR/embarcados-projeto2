@@ -31,11 +31,18 @@ struct system_data
     struct bme280_data bme280_data;
 };
 
-void process_tcp_client(int client_socket)
+struct system_data all_system_data;
+
+int client_socket;
+int server_socket;
+struct sockaddr_in server_address;
+struct sockaddr_in client_address;
+
+void process_tcp_client()
 {
-    struct system_data all_system_data;
     int received_length = recv(client_socket, (void *)&all_system_data, sizeof(struct system_data), 0);
-    if(received_length != sizeof(struct system_data)) {
+    if (received_length != sizeof(struct system_data))
+    {
         printf("Houve um problema ao receber os dados.");
     }
 
@@ -53,54 +60,80 @@ void process_tcp_client(int client_socket)
            all_system_data.bme280_data.humidity, all_system_data.bme280_data.temperature);
 }
 
-int create_socket()
+void create_socket()
 {
-    int client_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    client_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (client_socket < 0)
     {
         printf("Erro no socket()\n");
     }
-
-    return client_socket;
 }
 
-void build_server_struct(struct sockaddr_in *server_address)
+void build_server_struct()
 {
-    memset(server_address, 0, sizeof(struct sockaddr_in)); // Zerando a estrutura de dados
-    server_address->sin_family = AF_INET;
-    server_address->sin_addr.s_addr = htonl(INADDR_ANY);
-    server_address->sin_port = htons(SERVER_PORT);
+    memset(&server_address, 0, sizeof(struct sockaddr_in)); // Zerando a estrutura de dados
+    server_address.sin_family = AF_INET;
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address.sin_port = htons(SERVER_PORT);
+}
+
+void bind_server()
+{
+    int status = bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address));
+    if (status < 0)
+    {
+        printf("Falha no Bind\n");
+    }
+}
+
+void listen_server()
+{
+    int queue_size = 10;
+    int status = listen(server_socket, queue_size);
+    if (status < 0)
+    {
+        printf("Falha no Listen\n");
+    }
+}
+
+void accept_client()
+{
+    unsigned int client_length = sizeof(client_address);
+    client_socket = accept(server_socket, (struct sockaddr *)&client_address, &client_length);
+    if (client_socket < 0) {
+        printf("Falha no Accept\n");
+    }
+}
+
+void initialize_socket() {
+    create_socket();
+    build_server_struct();
+    bind_server();
+    listen_server();
+}
+
+void close_client()
+{
+    close(client_socket);
+}
+
+void close_server()
+{
+    close(server_socket);
 }
 
 int main()
 {
-    int client_socket;
-    struct sockaddr_in server_address, client_address;
-    unsigned int client_length;
-
-    int server_socket = create_socket();
-    build_server_struct(&server_address);
-
-    if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
-        printf("Falha no Bind\n");
-
-    if (listen(server_socket, 10) < 0)
-        printf("Falha no Listen\n");
+    initialize_socket();
 
     while (1)
     {
-        client_length = sizeof(client_address);
-        if ((client_socket = accept(server_socket,
-                                    (struct sockaddr *)&client_address,
-                                    &client_length)) < 0)
-            printf("Falha no Accept\n");
-
-        process_tcp_client(client_socket);
-
-        close(client_socket);
+        accept_client();
+        process_tcp_client();
+        close_client();
     }
 
-    close(server_socket);
+    close_server();
 
     return 0;
 }
