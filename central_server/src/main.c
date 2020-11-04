@@ -20,12 +20,9 @@ int main(int argc, char *argv[]) {
     signal(SIGSEGV, handle_all_interruptions);
     signal(SIGPIPE, handle_all_interruptions);
 
-    // initialize_tcp_server(&all_system_data);
-    send_data();
-    sleep(5);
-    send_data();
-    sleep(5);
-    send_data();
+    sleep(2);
+
+    initialize_tcp_server(&all_system_data);
 
     return 0;
 }

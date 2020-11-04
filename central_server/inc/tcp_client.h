@@ -57,7 +57,7 @@ void initialize_client_socket();
  * @return void.
  *
  */
-void send_data();
+void send_data(int option);
 
 /*!
  * @brief This function is used to close socket connection.

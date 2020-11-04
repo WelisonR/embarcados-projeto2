@@ -27,14 +27,13 @@ struct system_data all_system_data = {
 /* Program threads */
 pthread_t set_environment_thread;
 pthread_t update_actuators_thread;
-// pthread_t send_system_data_thread;
-pthread_t receive_central_commad_thread;
+pthread_t send_system_data_thread;
+pthread_t receive_central_command_thread;
 
 /* pthreads mutex controlled by alarm */
 pthread_mutex_t set_environment_data_mutex;
 pthread_mutex_t update_actuators_mutex;
-// pthread_mutex_t send_system_data_mutex;
-pthread_mutex_t receive_central_commad_mutex;
+pthread_mutex_t send_system_data_mutex;
 
 /*!
  * @brief This function starts execution of all system actuators.
@@ -53,22 +52,22 @@ void initialize_system()
     /* Initialize mutex to threads */
     pthread_mutex_init(&set_environment_data_mutex, NULL);
     pthread_mutex_init(&update_actuators_mutex, NULL);
-    // pthread_mutex_init(&send_system_data_mutex, NULL);
-    pthread_mutex_init(&receive_central_commad_mutex, NULL);
+    pthread_mutex_init(&send_system_data_mutex, NULL);
 
 
     /* Lock thread executions */
     pthread_mutex_lock(&set_environment_data_mutex);
     pthread_mutex_lock(&update_actuators_mutex);
-    pthread_mutex_lock(&receive_central_commad_mutex);
+    pthread_mutex_lock(&send_system_data_mutex);
+
 
     /* Create system threads */
     pthread_create(&set_environment_thread, NULL, &set_environment_data, NULL);
     pthread_create(&update_actuators_thread, NULL, &update_actuators, NULL);
-    // pthread_create(&send_system_data_thread, NULL, &send_system_data, NULL);
-    pthread_create(&receive_central_commad_thread, NULL, &initialize_tcp_server, NULL);
+    pthread_create(&send_system_data_thread, NULL, &send_system_data, NULL);
+    pthread_create(&receive_central_command_thread, NULL, &initialize_tcp_server, NULL);
 
-    usleep(10000); /* Wait thread setup of ncurses input region */
+    sleep(2); /* Gap between threads and alarm initialization */
 
     /* Initialize alarm callbacks */
     ualarm(ALARM_TIME_SIZE, ALARM_TIME_SIZE);
@@ -76,8 +75,8 @@ void initialize_system()
     /* Join and finalize threads */
     pthread_join(set_environment_thread, NULL);
     pthread_join(update_actuators_thread, NULL);
-    // pthread_join(send_system_data_thread, NULL);
-    pthread_join(receive_central_commad_thread, NULL);
+    pthread_join(send_system_data_thread, NULL);
+    pthread_join(receive_central_command_thread, NULL);
 }
 
 /*!
@@ -93,7 +92,7 @@ void handle_alarm()
     if (alarm_step == 0)
     {
         pthread_mutex_unlock(&update_actuators_mutex);
-        // pthread_mutex_unlock(&send_system_data_mutex);
+        pthread_mutex_unlock(&send_system_data_mutex);
     }
 
     /* Control thread execution based on 1s cycles */
@@ -111,14 +110,16 @@ void handle_system_interruption(int signal)
     /* Close socket connection */
     handle_server_close();
 
-    /* Cancel all threads activies */
+    /* Cancel threads activies */
     pthread_cancel(set_environment_thread);
     pthread_cancel(update_actuators_thread);
+    pthread_cancel(send_system_data_thread);
+    pthread_cancel(receive_central_command_thread);
 
     /* Destroy thread mutex */
     pthread_mutex_destroy(&set_environment_data_mutex);
     pthread_mutex_destroy(&update_actuators_mutex);
-    // pthread_mutex_destroy(&send_system_data_mutex);
+    pthread_mutex_destroy(&send_system_data_mutex);
 
     /* Close important system resources */
     handle_actuators_interruption(all_system_data.devices, DEVICES_LENGTH);
@@ -133,7 +134,7 @@ void *send_system_data()
 {
     while (1)
     {
-        // pthread_mutex_lock(&send_system_data_mutex);
+        pthread_mutex_lock(&send_system_data_mutex);
         send_data(&all_system_data);
     }
 }
