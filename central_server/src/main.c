@@ -1,4 +1,5 @@
 #include "tcp_server.h"
+#include "tcp_client.h"
 #include <signal.h>
 
 struct system_data all_system_data;
@@ -19,7 +20,12 @@ int main(int argc, char *argv[]) {
     signal(SIGSEGV, handle_all_interruptions);
     signal(SIGPIPE, handle_all_interruptions);
 
-    initialize_tcp_server(&all_system_data);
+    // initialize_tcp_server(&all_system_data);
+    send_data();
+    sleep(5);
+    send_data();
+    sleep(5);
+    send_data();
 
     return 0;
 }
@@ -29,6 +35,6 @@ int main(int argc, char *argv[]) {
  */
 void handle_all_interruptions(int signal)
 {
-    handle_server_close();
+    // handle_server_close();
     exit(0);
 }

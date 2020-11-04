@@ -56,12 +56,14 @@ void initialize_client_socket()
 /*!
  * @brief This functions is used to send system data across socket connection.
  */
-void send_data(struct system_data *transmitted_data)
+void send_data()
 {
+    int value = 10;
+
     initialize_client_socket();
     connect_to_server();
-    int transmitted_bytes = send(client_socket_c, (void *)transmitted_data, sizeof(struct system_data), 0);
-    if (transmitted_bytes != sizeof(struct system_data))
+    int transmitted_bytes = send(client_socket_c, (void *)&value, sizeof(int), 0);
+    if (transmitted_bytes != sizeof(int))
     {
         printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
     }

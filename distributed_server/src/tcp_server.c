@@ -6,26 +6,16 @@ int server_socket_s;
 /*!
  * @brief This functions is used to receive all system data from client (distributed server)
  */
-void process_tcp_client(struct system_data *all_enviroment_data)
+void process_tcp_client()
 {
-    int received_length = recv(client_socket_s, (void *)all_enviroment_data, sizeof(struct system_data), 0);
-    if (received_length != sizeof(struct system_data))
+    int value = 0;
+    int received_length = recv(client_socket_s, (void *)&value, sizeof(int), 0);
+    if (received_length != sizeof(int))
     {
         printf("Houve um problema ao receber os dados.");
     }
 
-    for (int i = 0; i < DEVICES_LENGTH; i++)
-    {
-        printf("Device %d: %d\n", all_enviroment_data->devices[i].gpio, all_enviroment_data->devices[i].state);
-    }
-
-    for (int i = 0; i < SENSORS_LENGTH; i++)
-    {
-        printf("Sensor %d: %d\n", all_enviroment_data->sensors[i].gpio, all_enviroment_data->sensors[i].state);
-    }
-
-    printf("T %f U %f P %f", all_enviroment_data->bme280_data.temperature,
-           all_enviroment_data->bme280_data.humidity, all_enviroment_data->bme280_data.temperature);
+    printf("Valor recebido: %d\n", value);
 }
 
 /*!
@@ -81,7 +71,7 @@ void listen_server()
 /*!
  * @brief This functions is used to initialize the tcp server activities.
  */
-int initialize_tcp_server(struct system_data *all_enviroment_data)
+void* initialize_tcp_server()
 {
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;
@@ -100,20 +90,19 @@ int initialize_tcp_server(struct system_data *all_enviroment_data)
             printf("Falha no Accept\n");
         }
 
-        process_tcp_client(all_enviroment_data);
+        process_tcp_client();
 
         close(client_socket_s);
     }
 
     close(server_socket_s);
-
-    return 0;
 }
 
 /*!
  * @brief This functions is used to close all tcp_server connections.
  */
-void handle_server_close() {
+void handle_server_close()
+{
     close(client_socket_s);
     close(server_socket_s);
 }

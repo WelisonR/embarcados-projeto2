@@ -8,11 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "system_api.h"
+#include <signal.h>
 
 /* System definitions */
-#define OUT_SERVER_IP "192.168.0.53"
-#define OUT_SERVER_PORT 10023
+#define OUT_SERVER_IP "192.168.0.52"
+#define OUT_SERVER_PORT 10123
 
 /*!
  * @brief This function is used to create a socket connection with server and port above.
@@ -57,7 +57,7 @@ void initialize_client_socket();
  * @return void.
  *
  */
-void send_data(struct system_data *transmitted_data);
+void send_data();
 
 /*!
  * @brief This function is used to close socket connection.

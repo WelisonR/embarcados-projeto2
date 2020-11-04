@@ -8,32 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "system_api.h"
 
 /* System definitions */
-#define IN_SERVER_PORT 10023
+#define IN_SERVER_PORT 10123
 #define DEVICES_LENGTH 6
 #define SENSORS_LENGTH 8
 
 // TODO: top level structures
-struct bme280_data
-{
-    double pressure;
-    double temperature;
-    double humidity;
-};
-
-typedef struct
-{
-    int gpio;
-    int state;
-} gpio_state;
-
-struct system_data
-{
-    gpio_state devices[DEVICES_LENGTH];
-    gpio_state sensors[SENSORS_LENGTH];
-    struct bme280_data bme280_data;
-};
 
 /*!
  * @brief This functions is used to receive all system data from client (distributed server)
@@ -43,7 +25,7 @@ struct system_data
  * @return void.
  *
  */
-void process_tcp_client(struct system_data *all_enviroment_data);
+void process_tcp_client();
 
 /*!
  * @brief Create a TCP/IP socket connection.
@@ -89,7 +71,7 @@ void listen_server();
  * @return void.
  *
  */
-int initialize_tcp_server(struct system_data *all_enviroment_data);
+void* initialize_tcp_server();
 
 /*!
  * @brief This functions is used to close all tcp_server connections.
