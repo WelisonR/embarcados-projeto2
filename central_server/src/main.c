@@ -84,7 +84,7 @@ void *post_it()
             store_system_logs(message);
             send_temperature_data(option, reference_temperature, hysteresis);
 
-            return NULL;
+            continue;
         }
         else if (option == 6)
         {
