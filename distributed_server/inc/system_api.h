@@ -1,5 +1,5 @@
-#ifndef SYSTEM_MONITOR_H_
-#define SYSTEM_MONITOR_H_
+#ifndef SYSTEM_API_H_
+#define SYSTEM_API_H_
 
 /* Header includes */
 #include <stdio.h>
@@ -78,4 +78,4 @@ void set_current_formatted_date(char *formatted_date);
  */
 void set_current_formatted_hour(char *formatted_hour);
 
-#endif /* SYSTEM_MONITOR_H_ */
+#endif /* SYSTEM_API_H_ */

@@ -59,16 +59,20 @@ void update_gpio_state(gpio_state *sensors, int sensors_length)
     for (int i = 0; i < sensors_length; i++)
     {
         sensors[i].state = bcm2835_gpio_lev(sensors[i].gpio);
-        printf("GPIO: %d, state: %d\n", sensors[i].gpio, sensors[i].state);
     }
-    printf("\n\n");
 }
 
+// Options from 0 to 5
 /*!
  * @brief Function used to invert a device state based on an option (check gpio_api.h).
  */
 void invert_device_state(gpio_state *devices, int option)
 {
+    if(option < 0 || option > 5) {
+        printf("Opção inválida.\n");
+        return;
+    }
+
     if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
     {
         bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, !devices[AIR_CONDITIONING_1_POS].state);

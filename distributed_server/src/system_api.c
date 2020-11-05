@@ -65,7 +65,7 @@ void initialize_system()
     pthread_create(&set_environment_thread, NULL, &set_environment_data, NULL);
     pthread_create(&update_actuators_thread, NULL, &update_actuators, NULL);
     pthread_create(&send_system_data_thread, NULL, &send_system_data, NULL);
-    pthread_create(&receive_central_command_thread, NULL, &initialize_tcp_server, NULL);
+    pthread_create(&receive_central_command_thread, NULL, &initialize_tcp_server, (void *)&all_system_data);
 
     sleep(2); /* Gap between threads and alarm initialization */
 

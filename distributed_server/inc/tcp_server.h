@@ -25,7 +25,7 @@
  * @return void.
  *
  */
-void process_tcp_client();
+void process_tcp_client(struct system_data *all_environment_data);
 
 /*!
  * @brief Create a TCP/IP socket connection.
@@ -71,7 +71,7 @@ void listen_server();
  * @return void.
  *
  */
-void* initialize_tcp_server();
+void* initialize_tcp_server(void* args);
 
 /*!
  * @brief This functions is used to close all tcp_server connections.

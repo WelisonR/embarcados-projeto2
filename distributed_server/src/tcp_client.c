@@ -1,4 +1,5 @@
 #include "tcp_client.h"
+#include "system_api.h"
 
 /* Global variables */
 struct sockaddr_in server_address_c;

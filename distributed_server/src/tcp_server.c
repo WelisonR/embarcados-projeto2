@@ -1,4 +1,5 @@
 #include "tcp_server.h"
+#include "gpio_api.h"
 
 int client_socket_s;
 int server_socket_s;
@@ -6,16 +7,18 @@ int server_socket_s;
 /*!
  * @brief This functions is used to receive all system data from client (distributed server)
  */
-void process_tcp_client()
+void process_tcp_client(struct system_data *all_environment_data)
 {
-    int value = 0;
-    int received_length = recv(client_socket_s, (void *)&value, sizeof(int), 0);
+    int option = 0;
+    int received_length = recv(client_socket_s, (void *)&option, sizeof(int), 0);
     if (received_length != sizeof(int))
     {
         printf("Houve um problema ao receber os dados.");
     }
 
-    printf("Valor recebido: %d\n", value);
+    if(option >= 0 || option <= 5) {
+        invert_device_state(all_environment_data->devices, option);
+    }
 }
 
 /*!
@@ -71,8 +74,10 @@ void listen_server()
 /*!
  * @brief This functions is used to initialize the tcp server activities.
  */
-void* initialize_tcp_server()
+void* initialize_tcp_server(void* args)
 {
+    struct system_data *all_environment_data = (struct system_data *) args;
+
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;
 
@@ -90,7 +95,7 @@ void* initialize_tcp_server()
             printf("Falha no Accept\n");
         }
 
-        process_tcp_client();
+        process_tcp_client(all_environment_data);
 
         close(client_socket_s);
     }
