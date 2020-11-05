@@ -120,6 +120,6 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
  */
 void handle_server_close()
 {
-    close(client_socket_s);
     close(server_socket_s);
+    close(client_socket_s);
 }

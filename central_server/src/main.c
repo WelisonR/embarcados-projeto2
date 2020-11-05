@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// OPT = 0 -> Alterna lâmpada 1
-// OPT = 1 -> Alterna lâmpada 2
-// OPT = 2 -> Alterna lâmpada 3
-// OPT = 3 -> Alterna lâmpada 4
-// OPT = 4 -> Ar-condicionado 1 -> VALOR DA TEMPERATURA
-// OPT = 5 -> Ar-condicionado 2 -> VALOR DA TEMPERATURA
-// OPT = 6 -> Alterna o alarme
+// OPT = 1 -> Alterna lâmpada 1
+// OPT = 2 -> Alterna lâmpada 2
+// OPT = 3 -> Alterna lâmpada 3
+// OPT = 4 -> Alterna lâmpada 4
+// OPT = 5 -> Ar-condicionado 1 -> VALOR DA TEMPERATURA
+// OPT = 6 -> Ar-condicionado 2 -> VALOR DA TEMPERATURA
+// OPT = 7 -> Alterna o alarme
 void *post_it()
 {
     int option = 0;
@@ -54,6 +54,7 @@ void *post_it()
     while (1)
     {
         scanf("%d", &option);
+        option--;
 
         if (option >= 0 && option <= 3)
         {
@@ -77,6 +78,23 @@ void *post_it()
                 scanf("%f", &reference_temperature);
                 sprintf(message, "Ar-condicionados 1 e 2 ON com TR %.2f °C", reference_temperature);
             }
+        }
+        else if (option == 6)
+        {
+            if (all_system_data.alarm_state.is_alarm_enabled == ON)
+            {
+                all_system_data.alarm_state.is_alarm_enabled = OFF;
+                sprintf(message, "Alarme desabilitado");
+            }
+            else
+            {
+                sprintf(message, "Alarme habilitado");
+                all_system_data.alarm_state.is_alarm_enabled = ON;
+            }
+        }
+
+        if(option >= 0 && option <= 6) {
+            store_system_logs(message);
         }
 
         if(option >= 0 && option <= 5) {
