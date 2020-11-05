@@ -54,7 +54,7 @@ void setup_pins()
 /*!
  * @brief Function used to update the gpio states with bcm2835_gpio_lev function.
  */
-void update_gpio_state(gpio_state *sensors, int sensors_length)
+void update_sensors_state(gpio_state *sensors, int sensors_length)
 {
     for (int i = 0; i < sensors_length; i++)
     {
@@ -68,7 +68,8 @@ void update_gpio_state(gpio_state *sensors, int sensors_length)
  */
 void invert_device_state(gpio_state *devices, int option)
 {
-    if(option < 0 || option > 5) {
+    if (option < 0 || option > 5)
+    {
         printf("Opção inválida.\n");
         return;
     }
@@ -90,19 +91,24 @@ void invert_device_state(gpio_state *devices, int option)
 /*!
  * @brief Function used to setup all devices (lamp and air) to LOW
  */
-void set_gpio_devices_low(gpio_state *devices, int devices_length)
+void set_gpio_actuators_low(gpio_state *devices, int devices_length, gpio_state *sensors, int sensors_length)
 {
     for (int i = 0; i < devices_length; i++)
     {
         bcm2835_gpio_write(devices[i].gpio, LOW);
+    }
+
+    for(int i = 0; i < sensors_length; i++)
+    {
+        bcm2835_gpio_write(sensors[i].gpio, LOW);
     }
 }
 
 /*!
  * @brief Function used to handle program interruption, disable devices and exit.
  */
-void handle_actuators_interruption(gpio_state *devices, int devices_length)
+void handle_actuators_interruption(gpio_state *devices, int devices_length, gpio_state *sensors, int sensors_length)
 {
-    set_gpio_devices_low(devices, devices_length);
+    set_gpio_actuators_low(devices, devices_length, sensors, sensors_length);
     bcm2835_close();
 }
