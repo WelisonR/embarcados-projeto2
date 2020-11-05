@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
 void *post_it()
 {
     int option = 0;
-    float reference_temperature = 0;
-    char message[50];
+    float reference_temperature = -1.0f, hysteresis = -1.0f;
+    char message[100];
     while (1)
     {
         scanf("%d", &option);
@@ -75,9 +75,16 @@ void *post_it()
             }
             else
             {
+                reference_temperature = -1.0f;
+                hysteresis = -1.0f;
                 scanf("%f", &reference_temperature);
-                sprintf(message, "Ar-condicionados 1 e 2 ON com TR %.2f °C", reference_temperature);
+                scanf("%f", &hysteresis);
+                sprintf(message, "Ar-condicionados 1 e 2 ON com TR %.2f °C e histerese %.2f °C", reference_temperature, hysteresis);
             }
+            store_system_logs(message);
+            send_temperature_data(option, reference_temperature, hysteresis);
+
+            return NULL;
         }
         else if (option == 6)
         {
@@ -97,8 +104,8 @@ void *post_it()
             store_system_logs(message);
         }
 
-        if(option >= 0 && option <= 5) {
-            send_data(option);
+        if(option >= 0 && option <= 3) {
+            send_int_data(option);
         }
     }
 }

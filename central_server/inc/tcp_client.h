@@ -57,7 +57,9 @@ void initialize_client_socket();
  * @return void.
  *
  */
-void send_data(int option);
+void send_int_data(int option);
+
+void send_temperature_data(int option, float reference_temperature, float hysteresis);
 
 /*!
  * @brief This function is used to close socket connection.

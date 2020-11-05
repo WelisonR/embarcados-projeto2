@@ -16,8 +16,34 @@ void process_tcp_client(struct system_data *all_environment_data)
         printf("Houve um problema ao receber os dados.");
     }
 
-    if(option >= 0 || option <= 5) {
+    if (option >= 0 || option <= 5)
+    {
         invert_device_state(all_environment_data->devices, &all_environment_data->air_temperature, option);
+    }
+
+    if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
+    {
+        float reference_temperature, hysteresis;
+        int received_length = recv(client_socket_s, (void *)&reference_temperature, sizeof(float), 0);
+        if (received_length != sizeof(float))
+        {
+            printf("Houve um problema ao receber os dados.");
+        }
+        int received_length = recv(client_socket_s, (void *)&hysteresis, sizeof(float), 0);
+        if (received_length != sizeof(float))
+        {
+            printf("Houve um problema ao receber os dados.");
+        }
+
+        if (reference_temperature != -1.0f)
+        {
+            all_environment_data->air_temperature.reference_temperature = reference_temperature;
+        }
+
+        if (hysteresis != -1.0f)
+        {
+            all_environment_data->air_temperature.hysteresis = hysteresis;
+        }
     }
 }
 
@@ -84,9 +110,9 @@ void listen_server()
 /*!
  * @brief This functions is used to initialize the tcp server activities.
  */
-void* initialize_tcp_server(void* args)
+void *initialize_tcp_server(void *args)
 {
-    struct system_data *all_environment_data = (struct system_data *) args;
+    struct system_data *all_environment_data = (struct system_data *)args;
 
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;

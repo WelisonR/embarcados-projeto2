@@ -37,7 +37,7 @@ void build_server_struct_c()
  */
 void connect_to_server()
 {
-    int server_connection = connect(client_socket_c, (struct sockaddr *) &server_address_c, sizeof(struct sockaddr_in));
+    int server_connection = connect(client_socket_c, (struct sockaddr *)&server_address_c, sizeof(struct sockaddr_in));
     if (server_connection < 0)
     {
         printf("Erro no connect()\n");
@@ -56,11 +56,34 @@ void initialize_client_socket()
 /*!
  * @brief This functions is used to send system data across socket connection.
  */
-void send_data(int option)
+void send_int_data(int option)
 {
     initialize_client_socket();
     connect_to_server();
     int transmitted_bytes = send(client_socket_c, (void *)&option, sizeof(int), 0);
+    if (transmitted_bytes != sizeof(int))
+    {
+        printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
+    }
+}
+
+void send_temperature_data(int option, float reference_temperature, float hysteresis)
+{
+    initialize_client_socket();
+    connect_to_server();
+    int transmitted_bytes = send(client_socket_c, (void *)&option, sizeof(int), 0);
+    if (transmitted_bytes != sizeof(int))
+    {
+        printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
+    }
+
+    transmitted_bytes = send(client_socket_c, (void *)&reference_temperature, sizeof(float), 0);
+    if (transmitted_bytes != sizeof(int))
+    {
+        printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
+    }
+
+    transmitted_bytes = send(client_socket_c, (void *)&hysteresis, sizeof(float), 0);
     if (transmitted_bytes != sizeof(int))
     {
         printf("Erro no envio: numero de bytes enviados diferente do esperado\n");
