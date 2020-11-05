@@ -85,7 +85,7 @@ void setup_pins();
  * 
  * @return void.
  */
-void update_sensors_state(gpio_state *sensors, int sensors_length);
+void update_gpio_state(gpio_state *sensors, int sensors_length);
 
 /*!
  * @brief Function used to invert a device state based on an option (check gpio_api.h).
@@ -106,7 +106,7 @@ void invert_device_state(gpio_state *devices, int option);
  * @return void.
  * 
  */
-void set_gpio_actuators_low(gpio_state *devices, int devices_length, gpio_state *sensors, int sensors_length);
+void set_gpio_devices_low(gpio_state *devices, int devices_length);
 
 /*!
  * @brief Function used to handle program interruption, disable devices and exit.
@@ -117,6 +117,6 @@ void set_gpio_actuators_low(gpio_state *devices, int devices_length, gpio_state 
  * @return void.
  * 
  */
-void handle_actuators_interruption(gpio_state *devices, int devices_length, gpio_state *sensors, int sensors_length);
+void handle_actuators_interruption(gpio_state *devices, int devices_length);
 
 #endif /* BCM2835_API_H_ */

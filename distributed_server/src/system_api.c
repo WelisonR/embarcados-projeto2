@@ -44,7 +44,7 @@ void initialize_system()
 
     /* Setup actuators devices */
     setup_devices();
-    set_gpio_actuators_low(all_system_data.devices, DEVICES_LENGTH, all_system_data.sensors, SENSORS_LENGTH);
+    set_gpio_devices_low(all_system_data.devices, DEVICES_LENGTH);
 
     /* Setup bme280 - External temperature */
     setup_bme280();
@@ -122,7 +122,7 @@ void handle_system_interruption(int signal)
     pthread_mutex_destroy(&send_system_data_mutex);
 
     /* Close important system resources */
-    handle_actuators_interruption(all_system_data.devices, DEVICES_LENGTH, all_system_data.sensors, SENSORS_LENGTH);
+    handle_actuators_interruption(all_system_data.devices, DEVICES_LENGTH);
     close_bme280();
     exit(0);
 }
@@ -170,7 +170,7 @@ void *update_actuators()
     {
         pthread_mutex_lock(&update_actuators_mutex);
 
-        update_sensors_state(all_system_data.sensors, SENSORS_LENGTH);
+        update_gpio_state(all_system_data.sensors, SENSORS_LENGTH);
         // TODO: informar ao servidor central se algum sensor está ativado
     }
 }

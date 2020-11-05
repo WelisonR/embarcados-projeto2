@@ -58,16 +58,6 @@ void build_server_struct(struct sockaddr_in *server_address)
     server_address->sin_port = htons(IN_SERVER_PORT);
 }
 
-void build_server_setsocket()
-{
-    int option = 1;
-    int status = setsockopt(server_socket_s, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
-    if (status < 0)
-    {
-        printf("Setsocket não atualizado.\n");
-    }
-}
-
 /*!
  * @brief This functions is used to bind server with address.
  */
@@ -103,7 +93,6 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
 
     server_socket_s = create_server_socket_s();
     build_server_struct(&server_address);
-    build_server_setsocket();
     bind_server(&server_address);
     listen_server();
 
