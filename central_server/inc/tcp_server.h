@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "system_defines.h"
+#include "alarm.h"
 
 /* System definitions */
 #define IN_SERVER_PORT 10023

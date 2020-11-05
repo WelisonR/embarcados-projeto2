@@ -1,5 +1,4 @@
 #include "tcp_server.h"
-#include "alarm.h"
 
 int client_socket_s;
 int server_socket_s;
