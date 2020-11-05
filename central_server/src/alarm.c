@@ -1,4 +1,5 @@
 #include "alarm.h"
+#include "system_monitor.h"
 
 void update_alarm_status(gpio_state *sensors, int *alarm_status, int *is_alarm_enabled)
 {

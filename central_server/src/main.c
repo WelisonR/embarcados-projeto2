@@ -6,11 +6,8 @@
 #include <pthread.h>
 
 /* Global variables */
-struct system_data all_system_data;
+struct all_system_data all_system_data;
 pthread_t set_environment_thread;
-pthread_t update_alarm_thread;
-int alarm_status = OFF;    // ON, OFF
-int is_alarm_enabled = ON; // ON, OFF
 
 /* Main functions */
 void handle_all_interruptions(int signal);
@@ -31,8 +28,10 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, handle_all_interruptions);
     signal(SIGPIPE, handle_all_interruptions);
 
+    all_system_data.alarm_state.alarm_status = OFF;
+    all_system_data.alarm_state.is_alarm_enabled = ON;
+
     pthread_create(&set_environment_thread, NULL, &post_it, NULL);
-    pthread_create(&update_alarm_thread, NULL, &update_alarm, NULL);
 
     initialize_tcp_server(&all_system_data);
 
@@ -46,15 +45,6 @@ void *post_it()
     {
         scanf("%d", &option);
         send_data(option);
-    }
-}
-
-void* update_alarm()
-{
-    while (1)
-    {
-        update_alarm_status(all_system_data.sensors, &alarm_status, &is_alarm_enabled);
-        sleep(1);
     }
 }
 

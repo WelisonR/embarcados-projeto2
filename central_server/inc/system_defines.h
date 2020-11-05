@@ -28,4 +28,16 @@ struct system_data
     struct bme280_data bme280_data;
 };
 
+struct alarm_state
+{
+    int alarm_status;
+    int is_alarm_enabled;
+};
+
+struct all_system_data
+{
+    struct system_data system_data;
+    struct alarm_state alarm_state;
+};
+
 #endif /* SYSTEM_DEFINES_H_ */
