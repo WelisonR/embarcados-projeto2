@@ -21,11 +21,20 @@ typedef struct
     int state;
 } gpio_state;
 
+struct air_temperature
+{
+  int air_1_enabled;
+  int air_2_enabled;
+  float reference_temperature;
+  float hysteresis;
+};
+
 struct system_data
 {
     gpio_state devices[DEVICES_LENGTH];
     gpio_state sensors[SENSORS_LENGTH];
     struct bme280_data bme280_data;
+    struct air_temperature air_temperature;
 };
 
 struct alarm_state
