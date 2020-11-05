@@ -14,8 +14,7 @@ int create_client_socker()
     client_socket_c = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (client_socket_c < 0)
     {
-        printf("Erro no socket()\n");
-        raise(SIGABRT);
+        printf("Não foi possível abrir o socket\n");
     }
 
     return client_socket_c;
@@ -41,7 +40,7 @@ void connect_to_server()
     int server_connection = connect(client_socket_c, (struct sockaddr *) &server_address_c, sizeof(struct sockaddr_in));
     if (server_connection < 0)
     {
-        printf("Erro no connect()\n");
+        printf("Falha no estabelecimento da comunicação.\n");
     }
 }
 

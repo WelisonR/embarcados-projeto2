@@ -55,7 +55,8 @@ int create_server_socket_s()
     int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_socket < 0)
     {
-        printf("Erro no socket()\n");
+        printf("Não foi possível abrir o socket\n");
+        raise(SIGABRT);
     }
 
     return tcp_socket;
@@ -78,7 +79,7 @@ void build_server_setsocket()
     int status = setsockopt(server_socket_s, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
     if (status < 0)
     {
-        printf("Setsocket não atualizado.\n");
+        printf("Não foi possível configurar o socket com setsocket.\n");
     }
 }
 
@@ -90,7 +91,8 @@ void bind_server(struct sockaddr_in *server_address)
     int status = bind(server_socket_s, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
     if (status < 0)
     {
-        printf("Falha no Bind\n");
+        printf("Não foi possível realizar o bind do socket.\n");
+        raise(SIGABRT);
     }
 }
 
@@ -103,7 +105,8 @@ void listen_server()
     int status = listen(server_socket_s, queue_size);
     if (status < 0)
     {
-        printf("Falha no Listen\n");
+        printf("Não foi possível realizar o listen do socket\n");
+        raise(SIGABRT);
     }
 }
 
@@ -129,7 +132,8 @@ void *initialize_tcp_server(void *args)
         client_socket_s = accept(server_socket_s, (struct sockaddr *)&client_address, &client_length);
         if (client_socket_s < 0)
         {
-            printf("Falha no Accept\n");
+            printf("Falha no estabelecimento da comunicação.\n");
+            sleep(1);
         }
 
         process_tcp_client(all_environment_data);

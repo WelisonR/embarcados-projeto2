@@ -59,6 +59,5 @@ void store_system_logs(char *message) {
 
     fprintf(fp, "%s, %s, %s\n", formatted_date, formatted_hour, message);
 
-    // printf(">> Temperaturas salvas em %s.\n", filepath);
     fclose(fp);
 }
