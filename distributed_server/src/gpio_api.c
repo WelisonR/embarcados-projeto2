@@ -66,19 +66,18 @@ void update_sensors_state(gpio_state *sensors, int sensors_length)
 /*!
  * @brief Function used to invert a device state based on an option (check gpio_api.h).
  */
-void invert_device_state(gpio_state *devices, int option)
+void invert_device_state(gpio_state *devices, struct air_temperature *air, int option)
 {
-    if(option < 0 || option > 5) {
+    if (option < 0 || option > 5)
+    {
         printf("Opção inválida.\n");
         return;
     }
 
     if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
     {
-        bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, !devices[AIR_CONDITIONING_1_POS].state);
-        bcm2835_gpio_write(devices[AIR_CONDITIONING_2_POS].gpio, !devices[AIR_CONDITIONING_2_POS].state);
-        devices[AIR_CONDITIONING_1_POS].state = !devices[AIR_CONDITIONING_1_POS].state;
-        devices[AIR_CONDITIONING_2_POS].state = !devices[AIR_CONDITIONING_2_POS].state;
+        air->air_1_enabled = !air->air_1_enabled;
+        air->air_2_enabled = !air->air_2_enabled;
     }
     else
     {
@@ -86,7 +85,6 @@ void invert_device_state(gpio_state *devices, int option)
         devices[option].state = !devices[option].state;
     }
 }
-
 /*!
  * @brief Function used to setup all devices (lamp and air) to LOW
  */
@@ -105,4 +103,25 @@ void handle_actuators_interruption(gpio_state *devices, int devices_length)
 {
     set_gpio_devices_low(devices, devices_length);
     bcm2835_close();
+}
+
+void control_temperature(gpio_state *devices, struct bme280_data *bme280_data, struct air_temperature *air)
+{
+    if (air->air_1_enabled || air->air_2_enabled)
+    {
+        if (bme280_data->temperature < air->reference_temperature - air->hysteresis / 2)
+        {
+            bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, HIGH);
+            bcm2835_gpio_write(devices[AIR_CONDITIONING_2_POS].gpio, HIGH);
+            devices[AIR_CONDITIONING_1_POS].state = HIGH;
+            devices[AIR_CONDITIONING_2_POS].state = HIGH;
+        }
+        else if (bme280_data->temperature > air->reference_temperature + air->hysteresis / 2)
+        {
+            bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, LOW);
+            bcm2835_gpio_write(devices[AIR_CONDITIONING_2_POS].gpio, LOW);
+            devices[AIR_CONDITIONING_1_POS].state = LOW;
+            devices[AIR_CONDITIONING_2_POS].state = LOW;
+        }
+    }
 }

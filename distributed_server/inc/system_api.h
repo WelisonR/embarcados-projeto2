@@ -18,6 +18,7 @@ struct system_data
     gpio_state devices[DEVICES_LENGTH];
     gpio_state sensors[SENSORS_LENGTH];
     struct bme280_data bme280_data;
+    struct air_temperature air_temperature;
 };
 
 
@@ -61,5 +62,7 @@ void *set_environment_data();
  * as presence sensor and touch sensor.
  */
 void *update_actuators();
+
+void *update_air_conditioning();
 
 #endif /* SYSTEM_API_H_ */

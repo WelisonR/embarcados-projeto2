@@ -8,6 +8,7 @@
 #include <sched.h>
 #include <sys/mman.h>
 #include <bcm2835.h>
+#include "bme280_defs.h"
 
 /* Definitions to bcm2835 */
 #define BCM2835_SUCESS      1
@@ -20,6 +21,13 @@ typedef struct
   int state;
 } gpio_state;
 
+struct air_temperature
+{
+  int air_1_enabled;
+  int air_2_enabled;
+  float reference_temperature;
+  float hysteresis;
+};
 
 /* GPIOs enum */
 #define LAMP 1
@@ -95,7 +103,7 @@ void update_sensors_state(gpio_state *sensors, int sensors_length);
  * 
  * @return void.
  */
-void invert_device_state(gpio_state *devices, int option);
+void invert_device_state(gpio_state *devices, struct air_temperature *air, int option);
 
 /*!
  * @brief Function used to setup all devices (lamp and air) to LOW
@@ -118,5 +126,7 @@ void set_gpio_devices_low(gpio_state *devices, int devices_length);
  * 
  */
 void handle_actuators_interruption(gpio_state *devices, int devices_length);
+
+void control_temperature(gpio_state *devices, struct bme280_data *bme280_data, struct air_temperature *air);
 
 #endif /* BCM2835_API_H_ */

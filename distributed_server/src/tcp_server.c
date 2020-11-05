@@ -1,5 +1,5 @@
 #include "tcp_server.h"
-#include "gpio_api.h"
+#include "system_api.h"
 
 int client_socket_s;
 int server_socket_s;
@@ -17,7 +17,7 @@ void process_tcp_client(struct system_data *all_environment_data)
     }
 
     if(option >= 0 || option <= 5) {
-        invert_device_state(all_environment_data->devices, option);
+        invert_device_state(all_environment_data->devices, &all_environment_data->air_temperature, option);
     }
 }
 

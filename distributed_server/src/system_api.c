@@ -1,6 +1,8 @@
 #include "system_api.h"
 #include "tcp_client.h"
 #include "tcp_server.h"
+#include "bme280_api.h"
+#include "gpio_api.h"
 
 #define ALARM_MAXIMUM_CYCLE 10
 #define ALARM_TIME_SIZE 100000
@@ -22,18 +24,21 @@ struct system_data all_system_data = {
      {TOUCH_SENSOR_4, LOW},
      {TOUCH_SENSOR_5, LOW},
      {TOUCH_SENSOR_6, LOW}},
-    {0.0, 0.0, 0.0}};
+    {0.0, 0.0, 0.0},
+    {LOW, LOW, 40.0, 2.0}};
 
 /* Program threads */
 pthread_t set_environment_thread;
 pthread_t update_actuators_thread;
 pthread_t send_system_data_thread;
 pthread_t receive_central_command_thread;
+pthread_t update_air_conditioning_thread;
 
 /* pthreads mutex controlled by alarm */
 pthread_mutex_t set_environment_data_mutex;
 pthread_mutex_t update_actuators_mutex;
 pthread_mutex_t send_system_data_mutex;
+pthread_mutex_t update_air_conditioning_mutex;
 
 /*!
  * @brief This function starts execution of all system actuators.
@@ -53,19 +58,20 @@ void initialize_system()
     pthread_mutex_init(&set_environment_data_mutex, NULL);
     pthread_mutex_init(&update_actuators_mutex, NULL);
     pthread_mutex_init(&send_system_data_mutex, NULL);
-
+    pthread_mutex_init(&update_air_conditioning_mutex, NULL);
 
     /* Lock thread executions */
     pthread_mutex_lock(&set_environment_data_mutex);
     pthread_mutex_lock(&update_actuators_mutex);
     pthread_mutex_lock(&send_system_data_mutex);
-
+    pthread_mutex_lock(&update_air_conditioning_mutex);
 
     /* Create system threads */
     pthread_create(&set_environment_thread, NULL, &set_environment_data, NULL);
     pthread_create(&update_actuators_thread, NULL, &update_actuators, NULL);
     pthread_create(&send_system_data_thread, NULL, &send_system_data, NULL);
     pthread_create(&receive_central_command_thread, NULL, &initialize_tcp_server, (void *)&all_system_data);
+    pthread_create(&update_air_conditioning_thread, NULL, &update_air_conditioning, NULL);
 
     sleep(2); /* Gap between threads and alarm initialization */
 
@@ -77,6 +83,7 @@ void initialize_system()
     pthread_join(update_actuators_thread, NULL);
     pthread_join(send_system_data_thread, NULL);
     pthread_join(receive_central_command_thread, NULL);
+    pthread_join(update_air_conditioning_thread, NULL);
 }
 
 /*!
@@ -93,6 +100,7 @@ void handle_alarm()
     {
         pthread_mutex_unlock(&update_actuators_mutex);
         pthread_mutex_unlock(&send_system_data_mutex);
+        pthread_mutex_unlock(&update_air_conditioning_mutex);
     }
 
     /* Control thread execution based on 1s cycles */
@@ -115,11 +123,13 @@ void handle_system_interruption(int signal)
     pthread_cancel(update_actuators_thread);
     pthread_cancel(send_system_data_thread);
     pthread_cancel(receive_central_command_thread);
+    pthread_cancel(update_air_conditioning_thread);
 
     /* Destroy thread mutex */
     pthread_mutex_destroy(&set_environment_data_mutex);
     pthread_mutex_destroy(&update_actuators_mutex);
     pthread_mutex_destroy(&send_system_data_mutex);
+    pthread_mutex_destroy(&update_air_conditioning_mutex);
 
     /* Close important system resources */
     handle_actuators_interruption(all_system_data.devices, DEVICES_LENGTH);
@@ -171,5 +181,15 @@ void *update_actuators()
         pthread_mutex_lock(&update_actuators_mutex);
 
         update_sensors_state(all_system_data.sensors, SENSORS_LENGTH);
+    }
+}
+
+void *update_air_conditioning()
+{
+    while(1)
+    {
+        pthread_mutex_lock(&update_air_conditioning_mutex);
+
+        control_temperature(all_system_data.devices, &all_system_data.bme280_data, &all_system_data.air_temperature);
     }
 }
