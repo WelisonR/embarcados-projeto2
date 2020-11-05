@@ -32,6 +32,6 @@ int main(int argc, char *argv[]) {
  */
 void handle_all_interruptions(int signal)
 {
-    // handle_server_close();
+    handle_server_close();
     exit(0);
 }
