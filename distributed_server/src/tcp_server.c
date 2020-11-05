@@ -24,12 +24,12 @@ void process_tcp_client(struct system_data *all_environment_data)
     if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
     {
         float reference_temperature, hysteresis;
-        int received_length = recv(client_socket_s, (void *)&reference_temperature, sizeof(float), 0);
+        received_length = recv(client_socket_s, (void *)&reference_temperature, sizeof(float), 0);
         if (received_length != sizeof(float))
         {
             printf("Houve um problema ao receber os dados.");
         }
-        int received_length = recv(client_socket_s, (void *)&hysteresis, sizeof(float), 0);
+        received_length = recv(client_socket_s, (void *)&hysteresis, sizeof(float), 0);
         if (received_length != sizeof(float))
         {
             printf("Houve um problema ao receber os dados.");
