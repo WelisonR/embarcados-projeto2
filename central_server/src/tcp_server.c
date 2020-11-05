@@ -14,18 +14,18 @@ void process_tcp_client(struct system_data *all_enviroment_data)
         printf("Houve um problema ao receber os dados.");
     }
 
-    for (int i = 0; i < DEVICES_LENGTH; i++)
-    {
-        printf("Device %d: %d\n", all_enviroment_data->devices[i].gpio, all_enviroment_data->devices[i].state);
-    }
+    // for (int i = 0; i < DEVICES_LENGTH; i++)
+    // {
+    //     printf("Device %d: %d\n", all_enviroment_data->devices[i].gpio, all_enviroment_data->devices[i].state);
+    // }
 
-    for (int i = 0; i < SENSORS_LENGTH; i++)
-    {
-        printf("Sensor %d: %d\n", all_enviroment_data->sensors[i].gpio, all_enviroment_data->sensors[i].state);
-    }
+    // for (int i = 0; i < SENSORS_LENGTH; i++)
+    // {
+    //     printf("Sensor %d: %d\n", all_enviroment_data->sensors[i].gpio, all_enviroment_data->sensors[i].state);
+    // }
 
-    printf("T %f U %f P %f", all_enviroment_data->bme280_data.temperature,
-           all_enviroment_data->bme280_data.humidity, all_enviroment_data->bme280_data.temperature);
+    // printf("T %f U %f P %f", all_enviroment_data->bme280_data.temperature,
+    //        all_enviroment_data->bme280_data.humidity, all_enviroment_data->bme280_data.temperature);
 }
 
 /*!
