@@ -45,6 +45,8 @@ int create_server_socket();
  */
 void build_server_struct(struct sockaddr_in *server_address);
 
+void build_server_setsocket();
+
 /*!
  * @brief This functions is used to bind server with address.
  *

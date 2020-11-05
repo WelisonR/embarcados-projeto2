@@ -170,7 +170,6 @@ void *update_actuators()
     {
         pthread_mutex_lock(&update_actuators_mutex);
 
-        update_gpio_state(all_system_data.sensors, SENSORS_LENGTH);
-        // TODO: informar ao servidor central se algum sensor está ativado
+        update_sensors_state(all_system_data.sensors, SENSORS_LENGTH);
     }
 }

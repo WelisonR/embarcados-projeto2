@@ -85,7 +85,7 @@ void setup_pins();
  * 
  * @return void.
  */
-void update_gpio_state(gpio_state *sensors, int sensors_length);
+void update_sensors_state(gpio_state *sensors, int sensors_length);
 
 /*!
  * @brief Function used to invert a device state based on an option (check gpio_api.h).

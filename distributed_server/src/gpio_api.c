@@ -54,7 +54,7 @@ void setup_pins()
 /*!
  * @brief Function used to update the gpio states with bcm2835_gpio_lev function.
  */
-void update_gpio_state(gpio_state *sensors, int sensors_length)
+void update_sensors_state(gpio_state *sensors, int sensors_length)
 {
     for (int i = 0; i < sensors_length; i++)
     {
