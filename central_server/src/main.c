@@ -46,7 +46,6 @@ void *post_it()
     {
         scanf("%d", &option);
         send_data(option);
-
     }
 }
 
@@ -54,7 +53,7 @@ void* update_alarm()
 {
     while (1)
     {
-        update_alarm_status(all_system_data.devices, &alarm_status, &is_alarm_enabled);
+        update_alarm_status(all_system_data.sensors, &alarm_status, &is_alarm_enabled);
         sleep(1);
     }
 }

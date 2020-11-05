@@ -8,6 +8,7 @@ void update_alarm_status(gpio_state *sensors, int *alarm_status, int *is_alarm_e
         {
             if (*alarm_status == OFF)
             {
+                store_system_logs("Alarme ON");
                 *alarm_status = ON;
                 // play .mp3
             }
@@ -15,6 +16,9 @@ void update_alarm_status(gpio_state *sensors, int *alarm_status, int *is_alarm_e
         }
     }
 
-    // stop any .mp3
+    if (*alarm_status == ON) {
+        store_system_logs("Alarme OFF");
+        // stop .mp3
+    }
     *alarm_status = OFF;
 }
