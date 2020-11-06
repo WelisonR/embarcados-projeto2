@@ -243,11 +243,11 @@ void setup_iterative_menu()
 
                 if (environment_data->system_data.devices[option].state == ON)
                 {
-                    sprintf(message, "Lâmpada %d OFF", option+1);
+                    sprintf(message, "Lamp %d OFF", option+1);
                 }
                 else
                 {
-                    sprintf(message, "Lâmpada %d ON", option+1);
+                    sprintf(message, "Lamp %d ON", option+1);
                 }
             }
             else if (selected_item_value == '2')
@@ -256,11 +256,11 @@ void setup_iterative_menu()
                 if (environment_data->alarm_state.is_alarm_enabled == ON)
                 {
                     environment_data->alarm_state.is_alarm_enabled = OFF;
-                    sprintf(message, "Alarme desabilitado");
+                    sprintf(message, "Alarm disabled");
                 }
                 else
                 {
-                    sprintf(message, "Alarme habilitado");
+                    sprintf(message, "Alarm enabled");
                     environment_data->alarm_state.is_alarm_enabled = ON;
                 }
             }
@@ -269,7 +269,7 @@ void setup_iterative_menu()
                 option = 5-1; // 5 or 6, both are air conditioning
                 if (environment_data->system_data.devices[option].state == ON)
                 {
-                    sprintf(message, "Ar-condicionados 1 e 2 OFF");
+                    sprintf(message, "Air conditioning 1 e 2 OFF");
                 }
                 else
                 {
@@ -277,18 +277,22 @@ void setup_iterative_menu()
                                                        MIN_REFERENCE_TEMPERATUER, MAX_REFERENCE_TEMPERATURE);
                     hysteresis = read_float(float_input_window, "Type the hysteresis value >> ",
                                             MIN_SYSTEM_HYSTERESIS, MAX_SYSTEM_HYSTERESIS);
-                    sprintf(message, "Ar-condicionados 1 e 2 ON com TR %.2f °C e histerese %.2f °C",
+                    sprintf(message, "Air conditioning 1 e 2 ON with TR %.2f °C and hysteresis %.2f °C",
                             reference_temperature, hysteresis);
                 }
+
+                display_text(float_input_window, 3, 1, message);
                 store_system_logs(message);
                 send_temperature_data(option, reference_temperature, hysteresis);
 
                 continue;
             }
 
+
             if (option >= 0 && option <= 6)
             {
                 store_system_logs(message);
+                display_text(float_input_window, 3, 1, message);
             }
 
             if (option >= 0 && option <= 3)

@@ -44,7 +44,7 @@ void store_system_logs(char *message) {
 
     /* Add header if file is empty */
     if(ftell(fp) == 0) {
-        fprintf(fp, "Data (DD-MM-YYYY), Hora (HH:MM:SS), Mensagem\n");
+        fprintf(fp, "Date (DD-MM-YYYY), Hour (HH:MM:SS), Message\n");
     }
 
     /* Recover data as DD-MM-YYYY */
