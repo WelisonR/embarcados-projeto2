@@ -128,5 +128,7 @@ void control_temperature(gpio_state *devices, struct bme280_data *bme280_data, s
     {
         bcm2835_gpio_write(devices[AIR_CONDITIONING_1_POS].gpio, LOW);
         bcm2835_gpio_write(devices[AIR_CONDITIONING_2_POS].gpio, LOW);
+        devices[AIR_CONDITIONING_1_POS].state = LOW;
+        devices[AIR_CONDITIONING_2_POS].state = LOW;
     }
 }

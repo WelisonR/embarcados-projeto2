@@ -210,7 +210,7 @@ void setup_iterative_menu()
 
     int option;
     float reference_temperature, hysteresis;
-    char message[100];
+    char message[100], interface_message[110];
     /* Execute until CTRL + C */
     while (1)
     {
@@ -281,7 +281,9 @@ void setup_iterative_menu()
                             reference_temperature, hysteresis);
                 }
 
-                display_text(float_input_window, 3, 1, message);
+                sprintf(interface_message, " >> %s!", message);
+
+                display_text(float_input_window, 3, 1, interface_message);
                 store_system_logs(message);
                 send_temperature_data(option, reference_temperature, hysteresis);
 
@@ -292,7 +294,8 @@ void setup_iterative_menu()
             if (option >= 0 && option <= 6)
             {
                 store_system_logs(message);
-                display_text(float_input_window, 3, 1, message);
+                sprintf(interface_message, " >> %s!", message);
+                display_text(float_input_window, 3, 1, interface_message);
             }
 
             if (option >= 0 && option <= 3)
