@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     init_system_apresentation(&all_system_data);
 
     pthread_create(&manage_user_inputs, NULL, &setup_menu_windows, NULL);
-    sleep(1); /* Wait thread setup of ncurses input region */
+    usleep(100000); /* Wait thread setup of ncurses input region */
     pthread_create(&display_system_status, NULL, &setup_system_status_interface, NULL);
 
     initialize_tcp_server(&all_system_data);
