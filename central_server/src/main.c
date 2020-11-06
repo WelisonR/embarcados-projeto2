@@ -5,10 +5,14 @@
 #include "alarm.h"
 #include <signal.h>
 #include <pthread.h>
+#include "system_windows.h"
 
 /* Global variables */
 struct all_system_data all_system_data;
+
 pthread_t set_environment_thread;
+pthread_t manage_user_inputs;
+pthread_t display_system_status;
 
 /* Main functions */
 void handle_all_interruptions(int signal);
@@ -32,82 +36,15 @@ int main(int argc, char *argv[])
     all_system_data.alarm_state.alarm_status = OFF;
     all_system_data.alarm_state.is_alarm_enabled = ON;
 
-    pthread_create(&set_environment_thread, NULL, &post_it, NULL);
+    init_system_apresentation(&all_system_data);
+
+    pthread_create(&manage_user_inputs, NULL, &setup_menu_windows, NULL);
+    sleep(1); /* Wait thread setup of ncurses input region */
+    pthread_create(&display_system_status, NULL, &setup_system_status_interface, NULL);
 
     initialize_tcp_server(&all_system_data);
 
     return 0;
-}
-
-// OPT = 1 -> Alterna lâmpada 1
-// OPT = 2 -> Alterna lâmpada 2
-// OPT = 3 -> Alterna lâmpada 3
-// OPT = 4 -> Alterna lâmpada 4
-// OPT = 5 -> Ar-condicionado 1 -> VALOR DA TEMPERATURA
-// OPT = 6 -> Ar-condicionado 2 -> VALOR DA TEMPERATURA
-// OPT = 7 -> Alterna o alarme
-void *post_it()
-{
-    int option = 0;
-    float reference_temperature = -1.0f, hysteresis = -1.0f;
-    char message[100];
-    while (1)
-    {
-        scanf("%d", &option);
-        option--;
-
-        if (option >= 0 && option <= 3)
-        {
-            if (all_system_data.system_data.devices[option].state == ON)
-            {
-                sprintf(message, "Lâmpada %d OFF", option+1);
-            }
-            else
-            {
-                sprintf(message, "Lâmpada %d ON", option+1);
-            }
-        }
-        else if (option >= 4 && option <= 5)
-        {
-            if (all_system_data.system_data.devices[option].state == ON)
-            {
-                sprintf(message, "Ar-condicionados 1 e 2 OFF");
-            }
-            else
-            {
-                reference_temperature = -1.0f;
-                hysteresis = -1.0f;
-                scanf("%f", &reference_temperature);
-                scanf("%f", &hysteresis);
-                sprintf(message, "Ar-condicionados 1 e 2 ON com TR %.2f °C e histerese %.2f °C", reference_temperature, hysteresis);
-            }
-            store_system_logs(message);
-            send_temperature_data(option, reference_temperature, hysteresis);
-
-            continue;
-        }
-        else if (option == 6)
-        {
-            if (all_system_data.alarm_state.is_alarm_enabled == ON)
-            {
-                all_system_data.alarm_state.is_alarm_enabled = OFF;
-                sprintf(message, "Alarme desabilitado");
-            }
-            else
-            {
-                sprintf(message, "Alarme habilitado");
-                all_system_data.alarm_state.is_alarm_enabled = ON;
-            }
-        }
-
-        if(option >= 0 && option <= 6) {
-            store_system_logs(message);
-        }
-
-        if(option >= 0 && option <= 3) {
-            send_int_data(option);
-        }
-    }
 }
 
 /*!
@@ -116,5 +53,8 @@ void *post_it()
 void handle_all_interruptions(int signal)
 {
     handle_server_close();
+    pthread_cancel(display_system_status);
+    pthread_cancel(manage_user_inputs);
+    clear_ncurses_alocation();
     exit(0);
 }
