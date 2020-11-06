@@ -415,15 +415,15 @@ void update_system_status_window()
         display_text(system_status_window, 9, 2, presence);
         display_text(system_status_window, 10, 2, kitchen);
 
-        display_text(system_status_window, 3, 40, humidity);
-        display_text(system_status_window, 4, 40, hysteresis);
-        display_text(system_status_window, 6, 40, air);
-        display_text(system_status_window, 8, 40, alarm_status);
-        display_text(system_status_window, 9, 40, bedroom);
-        display_text(system_status_window, 10, 40, living_room);
+        display_text(system_status_window, 3, 45, humidity);
+        display_text(system_status_window, 4, 45, hysteresis);
+        display_text(system_status_window, 6, 45, air);
+        display_text(system_status_window, 8, 45, alarm_status);
+        display_text(system_status_window, 9, 45, bedroom);
+        display_text(system_status_window, 10, 45, living_room);
 
         wrefresh(system_status_window);
-        usleep(500000);
+        usleep(900000);
     }
 }
 
