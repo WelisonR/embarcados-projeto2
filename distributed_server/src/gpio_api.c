@@ -82,6 +82,7 @@ void invert_device_state(gpio_state *devices, struct air_temperature *air, int o
 {
     if (option < 0 || option > 5)
     {
+        printf("Received option is not valid!\n");
         return;
     }
 
@@ -98,6 +99,7 @@ void invert_device_state(gpio_state *devices, struct air_temperature *air, int o
         devices[option].state = !devices[option].state;
     }
 }
+
 /*!
  * @brief Function used to setup all devices (lamp and air) to LOW.
  */

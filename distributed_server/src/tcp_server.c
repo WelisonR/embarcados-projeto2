@@ -13,16 +13,16 @@
 #define SENSORS_LENGTH 8
 
 /* Global variables */
-int client_socket_s;
-int server_socket_s;
+int tcps_client;
+int tcps_server;
 
 /*!
  * @brief This function is used to receive all system data from client (distributed server)
  */
-void process_tcp_client(struct system_data *all_environment_data)
+void process_tcp_client(struct system_data *all_system_data)
 {
     int option = 0;
-    int received_length = recv(client_socket_s, (void *)&option, sizeof(int), 0);
+    int received_length = recv(tcps_client, (void *)&option, sizeof(int), 0);
     if (received_length != sizeof(int))
     {
         printf("Houve um problema ao receber os dados.");
@@ -30,18 +30,18 @@ void process_tcp_client(struct system_data *all_environment_data)
 
     if (option >= 0 || option <= 5)
     {
-        invert_device_state(all_environment_data->devices, &all_environment_data->air_temperature, option);
+        invert_device_state(all_system_data->devices, &all_system_data->air_temperature, option);
     }
 
     if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
     {
         float reference_temperature, hysteresis;
-        received_length = recv(client_socket_s, (void *)&reference_temperature, sizeof(float), 0);
+        received_length = recv(tcps_client, (void *)&reference_temperature, sizeof(float), 0);
         if (received_length != sizeof(float))
         {
             printf("Houve um problema ao receber os dados.");
         }
-        received_length = recv(client_socket_s, (void *)&hysteresis, sizeof(float), 0);
+        received_length = recv(tcps_client, (void *)&hysteresis, sizeof(float), 0);
         if (received_length != sizeof(float))
         {
             printf("Houve um problema ao receber os dados.");
@@ -49,12 +49,12 @@ void process_tcp_client(struct system_data *all_environment_data)
 
         if (reference_temperature != -1.0f)
         {
-            all_environment_data->air_temperature.reference_temperature = reference_temperature;
+            all_system_data->air_temperature.reference_temperature = reference_temperature;
         }
 
         if (hysteresis != -1.0f)
         {
-            all_environment_data->air_temperature.hysteresis = hysteresis;
+            all_system_data->air_temperature.hysteresis = hysteresis;
         }
     }
 }
@@ -63,7 +63,7 @@ void process_tcp_client(struct system_data *all_environment_data)
 /*!
  * @brief Create a TCP/IP socket connection.
  */
-int create_server_socket_s()
+int create_server_socket()
 {
     int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_socket < 0)
@@ -94,7 +94,7 @@ void build_server_struct(struct sockaddr_in *server_address)
 void build_server_setsocket()
 {
     int option = 1;
-    int status = setsockopt(server_socket_s, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
+    int status = setsockopt(tcps_server, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
     if (status < 0)
     {
         printf("Não foi possível configurar o socket com setsocket.\n");
@@ -107,7 +107,7 @@ void build_server_setsocket()
  */
 void bind_server(struct sockaddr_in *server_address)
 {
-    int status = bind(server_socket_s, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
+    int status = bind(tcps_server, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
     if (status < 0)
     {
         printf("Não foi possível realizar o bind do socket.\n");
@@ -122,7 +122,7 @@ void bind_server(struct sockaddr_in *server_address)
 void listen_server()
 {
     int queue_size = 100;
-    int status = listen(server_socket_s, queue_size);
+    int status = listen(tcps_server, queue_size);
     if (status < 0)
     {
         printf("Não foi possível realizar o listen do socket\n");
@@ -135,12 +135,12 @@ void listen_server()
  */
 void *initialize_tcp_server(void *args)
 {
-    struct system_data *all_environment_data = (struct system_data *)args;
+    struct system_data *all_system_data = (struct system_data *)args;
 
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;
 
-    server_socket_s = create_server_socket_s();
+    tcps_server = create_server_socket();
     build_server_struct(&server_address);
     build_server_setsocket();
     bind_server(&server_address);
@@ -149,19 +149,19 @@ void *initialize_tcp_server(void *args)
     while (1)
     {
         client_length = sizeof(client_address);
-        client_socket_s = accept(server_socket_s, (struct sockaddr *)&client_address, &client_length);
-        if (client_socket_s < 0)
+        tcps_client = accept(tcps_server, (struct sockaddr *)&client_address, &client_length);
+        if (tcps_client < 0)
         {
             printf("Falha no estabelecimento da comunicação.\n");
             sleep(1);
         }
 
-        process_tcp_client(all_environment_data);
+        process_tcp_client(all_system_data);
 
-        close(client_socket_s);
+        close(tcps_client);
     }
 
-    close(server_socket_s);
+    close(tcps_server);
 }
 
 /*!
@@ -169,6 +169,6 @@ void *initialize_tcp_server(void *args)
  */
 void handle_server_close()
 {
-    close(client_socket_s);
-    close(server_socket_s);
+    close(tcps_client);
+    close(tcps_server);
 }
