@@ -25,7 +25,9 @@ Para executar o projeto, faça o clone do repositório e, na pasta principal, pr
     *   Compilar: `make`; e
     *   Executar: `bin/bin/`.
 
-*   Observações:
+*   Logs da execução do programa são salvos em `/central_server/data/logs.csv`.
+
+Observações:
     *   Seguir a ordem de execução citada acima;
     *   Maioria informações sobre bibliotecas, arquitetura e hardware do projeto podem ser encontradas no [link](https://gitlab.com/fse_fga/projetos/projeto-2).
 
@@ -46,6 +48,8 @@ No menu de opções, pode-se optar pelos itens abaixo:
         *   Caso o ar-condicionado esteja ligado, pressione enter para desligar ambos.
         *   Caso o ar-condicionado esteja desligado, pressione enter, digite a temperatura de referência e a histerese.
     *   Comentário: realiza o controle de temperatura com base na escolha do usuário, na temperatura de referência e na histerese.
+
+*   Para encerrar o programa pressione `CTRL + C` no servidor central e no servidor distribuído.
 
 ## Autor
 
