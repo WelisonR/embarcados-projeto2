@@ -29,7 +29,7 @@ Para executar o projeto, faça o clone do repositório e, na pasta principal, pr
 
 *  Observações:
     *   Seguir a ordem de execução citada acima;
-    *   Maioria informações sobre bibliotecas, arquitetura e hardware do projeto podem ser encontradas no [link](https://gitlab.com/fse_fga/projetos/projeto-2).
+    *   Maiores informações sobre bibliotecas, arquitetura e hardware do projeto podem ser encontradas no [link](https://gitlab.com/fse_fga/projetos/projeto-2).
 
 ## Instruções de Uso
 

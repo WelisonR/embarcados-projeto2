@@ -1,25 +1,25 @@
+/* header includes */
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
+
+/* Own header files */
 #include "system_defines.h"
 #include "system_monitor.h"
 #include "tcp_server.h"
 #include "tcp_client.h"
 #include "alarm.h"
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <pthread.h>
 #include "system_windows.h"
 
 /* Global variables */
 struct all_system_data all_system_data;
 
-pthread_t set_environment_thread;
 pthread_t manage_user_inputs;
 pthread_t display_system_status;
 
 /* Main functions */
 void handle_all_interruptions(int signal);
-void *update_alarm();
-void *post_it();
 
 /*!
  * @brief This function starts execution of the program.
@@ -49,6 +49,10 @@ int main(int argc, char *argv[])
 
     /* Initialize tcp communication to retrieve environment informations */
     initialize_tcp_server(&all_system_data);
+
+    /* Join and finalize threads */
+    pthread_join(manage_user_inputs, NULL);
+    pthread_join(display_system_status, NULL);
 
     return 0;
 }
