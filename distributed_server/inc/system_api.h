@@ -2,10 +2,7 @@
 #define SYSTEM_API_H_
 
 /* Header includes */
-#include <stdio.h>
-#include <time.h>
-#include <pthread.h>
-#include "bme280_api.h"
+#include "bme280_defs.h"
 #include "gpio_api.h"
 
 /* System definitions */
@@ -21,7 +18,6 @@ struct system_data
     struct air_temperature air_temperature;
 };
 
-
 /*!
  * @brief This function starts execution of all system actuators.
  * 
@@ -34,7 +30,6 @@ void initialize_system();
  * and open threads execution.
  * 
  * @return void.
- * 
  */
 void handle_alarm();
 
@@ -43,26 +38,38 @@ void handle_alarm();
  * 
  * @param[in] signal        :       system signal sent by event.
  * 
+ * @return void.
  */
 void handle_system_interruption(int signal);
 
-
 /*!
- * @brief Function used to send system data across tcp/ip connection.
+ * @brief Function used to send all system data across tcp/ip connection (therad).
+ * 
+ * @return void*.
  */
 void *send_system_data();
 
 /*!
- * @brief Function used to set valid system temperatura, humidity and pressure
+ * @brief Function used to set valid system temperature, humidity and pressure from bme280 (thread).
+ * 
+ * @return void*.
  */
 void *set_environment_data();
 
 /*!
- * @brief Function used to update actuators of continuous tracking
- * as presence sensor and touch sensor.
+ * @brief Function used to update actuators to continuous track
+ * presence sensors and touch sensors (thread).
+ * 
+ * @return void*.
  */
 void *update_actuators();
 
+/*!
+ * @brief Function used to control air conditionings according to reference temperature,
+ * hysteresis and user choices. (thread)
+ * 
+ * @return void*.
+ */
 void *update_air_conditioning();
 
 #endif /* SYSTEM_API_H_ */

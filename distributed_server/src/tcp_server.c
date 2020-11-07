@@ -1,11 +1,23 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/socket.h>
 #include "tcp_server.h"
 #include "system_api.h"
 
+/* System definitions */
+#define IN_SERVER_PORT 10123
+#define DEVICES_LENGTH 6
+#define SENSORS_LENGTH 8
+
+/* Global variables */
 int client_socket_s;
 int server_socket_s;
 
 /*!
- * @brief This functions is used to receive all system data from client (distributed server)
+ * @brief This function is used to receive all system data from client (distributed server)
  */
 void process_tcp_client(struct system_data *all_environment_data)
 {
@@ -47,6 +59,7 @@ void process_tcp_client(struct system_data *all_environment_data)
     }
 }
 
+/* TODO: Create top file with this function */
 /*!
  * @brief Create a TCP/IP socket connection.
  */
@@ -62,6 +75,7 @@ int create_server_socket_s()
     return tcp_socket;
 }
 
+/* TODO: Create top file with this function */
 /*!
  * @brief This functions is used to build the server address structure.
  */
@@ -73,6 +87,10 @@ void build_server_struct(struct sockaddr_in *server_address)
     server_address->sin_port = htons(IN_SERVER_PORT);
 }
 
+/* TODO: Create top file with this function */
+/*!
+ * @brief This function is used to reuse the connection port address of socket server.
+ */
 void build_server_setsocket()
 {
     int option = 1;
@@ -83,6 +101,7 @@ void build_server_setsocket()
     }
 }
 
+/* TODO: Create top file with this function */
 /*!
  * @brief This functions is used to bind server with address.
  */
@@ -96,6 +115,7 @@ void bind_server(struct sockaddr_in *server_address)
     }
 }
 
+/* TODO: Create top file with this function */
 /*!
  * @brief This functions is used to setup server listen with queue size.
  */

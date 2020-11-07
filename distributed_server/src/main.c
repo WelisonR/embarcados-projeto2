@@ -1,3 +1,7 @@
+/* System header files */
+#include <signal.h>
+
+/* Own header files */
 #include "system_api.h"
 
 /* Main functions */
@@ -17,6 +21,7 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, handle_all_interruptions);
     signal(SIGPIPE, handle_all_interruptions);
 
+    /* Initialize system resources */
     initialize_system();
 
     return 0;

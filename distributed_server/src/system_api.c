@@ -1,14 +1,22 @@
+/* System header files */
+#include <stdio.h>
+#include <time.h>
+#include <pthread.h>
+
+/* Own header files */
 #include "system_api.h"
 #include "tcp_client.h"
 #include "tcp_server.h"
 #include "bme280_api.h"
 #include "gpio_api.h"
 
+/* File definitions */
 #define ALARM_MAXIMUM_CYCLE 10
 #define ALARM_TIME_SIZE 100000
 
 /* Global variables */
 int alarm_step = 0;
+/* Definitions to devices, sensors, bme280 sensor and air temperature */
 struct system_data all_system_data = {
     {{LAMP_1, LOW},
      {LAMP_2, LOW},
@@ -138,7 +146,7 @@ void handle_system_interruption(int signal)
 }
 
 /*!
- * @brief Function used to send system data across tcp/ip connection.
+ * @brief Function used to send all system data across tcp/ip connection (therad).
  */
 void *send_system_data()
 {
@@ -150,7 +158,7 @@ void *send_system_data()
 }
 
 /*!
- * @brief Function used to set valid system temperatura, humidity and pressure
+ * @brief Function used to set valid system temperature, humidity and pressure from bme280 (thread).
  */
 void *set_environment_data()
 {
@@ -171,25 +179,27 @@ void *set_environment_data()
 }
 
 /*!
- * @brief Function used to update actuators of continuous tracking
- * as presence sensor and touch sensor.
+ * @brief Function used to update actuators to continuous track
+ * presence sensors and touch sensors (thread).
  */
 void *update_actuators()
 {
     while (1)
     {
         pthread_mutex_lock(&update_actuators_mutex);
-
         update_sensors_state(all_system_data.sensors, SENSORS_LENGTH);
     }
 }
 
+/*!
+ * @brief Function used to control air conditionings according to reference temperature,
+ * hysteresis and user choices. (thread)
+ */
 void *update_air_conditioning()
 {
-    while(1)
+    while (1)
     {
         pthread_mutex_lock(&update_air_conditioning_mutex);
-
         control_temperature(all_system_data.devices, &all_system_data.bme280_data, &all_system_data.air_temperature);
     }
 }

@@ -1,4 +1,16 @@
+/* System header files */
+#include <sys/mman.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sched.h>
+
+/* Own header files */
 #include "gpio_api.h"
+
+/* File definitions */
+#define BCM2835_SUCESS 1
+#define BCM2835_FAIL -1
 
 /*!
  * @brief Function used to setup the initial state of the actuators.
@@ -7,13 +19,14 @@ int setup_devices()
 {
     if (!bcm2835_init())
     {
-        fprintf(stderr, "Cannot setup the actuators devices.");
+        fprintf(stderr, "Não foi possível configurar os dispositivos físicos.");
         raise(SIGABRT);
     }
 
     const struct sched_param priority = {1};
     /* Set calling process with high priority in first-in, first-out policy */
     sched_setscheduler(0, SCHED_FIFO, &priority);
+
     /* mlockall() lock part or all of the calling process's virtual address space into RAM */
     mlockall(MCL_CURRENT | MCL_FUTURE);
 
@@ -62,7 +75,6 @@ void update_sensors_state(gpio_state *sensors, int sensors_length)
     }
 }
 
-// Options from 0 to 5
 /*!
  * @brief Function used to invert a device state based on an option (check gpio_api.h).
  */
@@ -70,10 +82,11 @@ void invert_device_state(gpio_state *devices, struct air_temperature *air, int o
 {
     if (option < 0 || option > 5)
     {
-        printf("Opção inválida.\n");
         return;
     }
 
+    /* Air conditioning is controlled by reference temperature and hysteresis. */
+    /* User define the air state (ON or OFF). */
     if (option == AIR_CONDITIONING_1_POS || option == AIR_CONDITIONING_2_POS)
     {
         air->air_1_enabled = !air->air_1_enabled;
@@ -86,7 +99,7 @@ void invert_device_state(gpio_state *devices, struct air_temperature *air, int o
     }
 }
 /*!
- * @brief Function used to setup all devices (lamp and air) to LOW
+ * @brief Function used to setup all devices (lamp and air) to LOW.
  */
 void set_gpio_devices_low(gpio_state *devices, int devices_length)
 {
@@ -105,8 +118,13 @@ void handle_actuators_interruption(gpio_state *devices, int devices_length)
     bcm2835_close();
 }
 
+/*!
+ * @brief Function used to control air conditionings according to reference temperature,
+ * hysteresis and user choices.
+ */
 void control_temperature(gpio_state *devices, struct bme280_data *bme280_data, struct air_temperature *air)
 {
+    /* If user enabled air, controll temperature according to reference temperature and hysteresis */
     if (air->air_1_enabled || air->air_2_enabled)
     {
         if (bme280_data->temperature < air->reference_temperature - air->hysteresis / 2)

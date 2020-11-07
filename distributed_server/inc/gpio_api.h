@@ -2,17 +2,8 @@
 #define BCM2835_API_H_
 
 /* header includes */
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sched.h>
-#include <sys/mman.h>
 #include <bcm2835.h>
 #include "bme280_defs.h"
-
-/* Definitions to bcm2835 */
-#define BCM2835_SUCESS      1
-#define BCM2835_FAIL        -1
 
 /* Structure to store gpio pin and current state */
 typedef struct
@@ -29,12 +20,6 @@ struct air_temperature
   float hysteresis;
 };
 
-/* GPIOs enum */
-#define LAMP 1
-#define AIR 2
-#define PRESENCE 3
-#define OPENNING 4
-
 /* Definition of lamp GPIOs */
 #define LAMP_1 RPI_V2_GPIO_P1_11 // GPIO 17
 #define LAMP_2 RPI_V2_GPIO_P1_12 // GPIO 18
@@ -46,10 +31,6 @@ struct air_temperature
 #define AIR_CONDITIONING_2 RPI_V2_GPIO_P1_18 // GPIO 24
 
 /* Lamp and air conditioning array positions */
-#define LAMP_1_POS 0
-#define LAMP_2_POS 1
-#define LAMP_3_POS 2
-#define LAMP_4_POS 3
 #define AIR_CONDITIONING_1_POS 4
 #define AIR_CONDITIONING_2_POS 5
 
@@ -79,9 +60,8 @@ int setup_devices();
 /*!
  * @brief Function used to setup input/output GPIOs pins.
  * 
- * @param[out] sensors          :       setup sensors as input/output
- * 
  * @return void.
+ * 
  */
 void setup_pins();
 
@@ -99,20 +79,19 @@ void update_sensors_state(gpio_state *sensors, int sensors_length);
  * @brief Function used to invert a device state based on an option (check gpio_api.h).
  * 
  * @param[in, out] devices          :       devices array with 6 items (lamp and air)
- * @param[in] sensors_length        :       option from lamp and air devices
+ * @param[in] sensors_length        :       option from lamp and air devices (0 to 5)
  * 
  * @return void.
  */
 void invert_device_state(gpio_state *devices, struct air_temperature *air, int option);
 
 /*!
- * @brief Function used to setup all devices (lamp and air) to LOW
+ * @brief Function used to setup all devices (lamp and air) to LOW.
  * 
  * @param[in, out] devices          :       devices array with 6 items (lamp and air)
  * @param[in] devices_length        :       length of devices array
  * 
  * @return void.
- * 
  */
 void set_gpio_devices_low(gpio_state *devices, int devices_length);
 
@@ -123,10 +102,19 @@ void set_gpio_devices_low(gpio_state *devices, int devices_length);
  * @param[in] devices_length        :       length of devices array
  * 
  * @return void.
- * 
  */
 void handle_actuators_interruption(gpio_state *devices, int devices_length);
 
+/*!
+ * @brief Function used to control air conditionings according to reference temperature,
+ * hysteresis and user choices.
+ * 
+ * @param[in, out] devices          :       pointer to struct with gpio devices data.
+ * @param[in, out] bme280_data          :       pointer to struct with bme280 sensor data.
+ * @param[in] air          :       pointer to struct with air configurations.
+ * 
+ * @return void.
+ */
 void control_temperature(gpio_state *devices, struct bme280_data *bme280_data, struct air_temperature *air);
 
 #endif /* BCM2835_API_H_ */
