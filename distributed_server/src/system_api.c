@@ -171,9 +171,20 @@ void *set_environment_data()
         int8_t response = set_bme280_data(&sensor_data_temp);
         if (response == BME280_OK)
         {
-            all_system_data.bme280_data.temperature = sensor_data_temp.temperature;
-            all_system_data.bme280_data.humidity = sensor_data_temp.humidity;
-            all_system_data.bme280_data.pressure = sensor_data_temp.pressure;
+            if (sensor_data_temp.temperature > 0)
+            {
+                all_system_data.bme280_data.temperature = sensor_data_temp.temperature;
+            }
+
+            if (sensor_data_temp.humidity > 0)
+            {
+                all_system_data.bme280_data.humidity = sensor_data_temp.humidity;
+            }
+
+            if (sensor_data_temp.pressure > 0)
+            {
+                all_system_data.bme280_data.pressure = sensor_data_temp.pressure;
+            }
         }
     }
 }
