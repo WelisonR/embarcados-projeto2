@@ -3,6 +3,8 @@
 #include "tcp_server.h"
 #include "tcp_client.h"
 #include "alarm.h"
+#include <stdlib.h>
+#include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
 #include "system_windows.h"
@@ -33,15 +35,19 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, handle_all_interruptions);
     signal(SIGPIPE, handle_all_interruptions);
 
+    /* Set alarm initial state as deactivated and avaliable */
     all_system_data.alarm_state.alarm_status = OFF;
     all_system_data.alarm_state.is_alarm_enabled = ON;
 
+    /* Initialize ncurses apresentation */
     init_system_apresentation(&all_system_data);
 
+    /* Create thread to display data and get system inputs */
     pthread_create(&manage_user_inputs, NULL, &setup_menu_windows, NULL);
     usleep(100000); /* Wait thread setup of ncurses input region */
     pthread_create(&display_system_status, NULL, &setup_system_status_interface, NULL);
 
+    /* Initialize tcp communication to retrieve environment informations */
     initialize_tcp_server(&all_system_data);
 
     return 0;

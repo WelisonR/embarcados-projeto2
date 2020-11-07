@@ -1,49 +1,60 @@
+
+/* header includes */
+#include <stdio.h>
+#include <time.h>
+
+/* Own header files */
 #include "system_monitor.h"
 
 /*!
  * @brief This API used to save the current date (DD-MM-YYYY) into a string.
  */
-void set_current_formatted_date(char *formatted_date) {
+void set_current_formatted_date(char *formatted_date)
+{
     time_t rawtime;
-    struct tm * timeinfo;
+    struct tm *timeinfo;
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
     sprintf(formatted_date, "%02d-%02d-%04d",
-        timeinfo->tm_mday, timeinfo->tm_mon+1, 1900+timeinfo->tm_year);
+            timeinfo->tm_mday, timeinfo->tm_mon + 1, 1900 + timeinfo->tm_year);
 }
 
 /*!
  * @brief This API used to save the current hour (HH:MM:SS) into a string.
  */
-void set_current_formatted_hour(char *formatted_hour) {
+void set_current_formatted_hour(char *formatted_hour)
+{
     time_t rawtime;
-    struct tm * timeinfo;
+    struct tm *timeinfo;
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
 
     sprintf(formatted_hour, "%02d:%02d:%02d",
-        timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
 }
 
 /*!
- * @brief This API used to store in csv file the datetime with temperatures.
+ * @brief Function used to store in csv file the system logs.
  */
-void store_system_logs(char *message) {
+void store_system_logs(char *message)
+{
     char filepath[] = "data/logs.csv";
-    FILE *fp = fopen(filepath,"a+");
-    fseek (fp, 0, SEEK_END);
+    FILE *fp = fopen(filepath, "a+");
+    fseek(fp, 0, SEEK_END);
 
     /* If file is not defined, return */
-    if(fp == NULL) {
+    if (fp == NULL)
+    {
         printf(">> Não foi possível salvar a média dos dados medidos.\n");
         return;
     }
 
     /* Add header if file is empty */
-    if(ftell(fp) == 0) {
+    if (ftell(fp) == 0)
+    {
         fprintf(fp, "Date (DD-MM-YYYY), Hour (HH:MM:SS), Message\n");
     }
 

@@ -1,10 +1,41 @@
+/* System header files */
+#include <menu.h>
+#include <string.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <pthread.h>
+
+/* Own header files */
+#include "system_defines.h"
+#include "system_monitor.h"
 #include "system_windows.h"
+#include "tcp_client.h"
+
+/* System definitions */
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define CTRLD 4
+#define ENTER_KEY 10
+
+#define DISPLAY_WIDTH COLS
+#define HEADER_X 0
+#define HEADER_Y 13
+#define SYSTEM_STATUS_HEIGHT 13
+#define MENU_HEIGHT 10
+#define INPUT_FIELD_HEIGHT 5
+
+#define MAX_REFERENCE_TEMPERATURE 100.0f
+#define MIN_REFERENCE_TEMPERATUER 10.0f
+#define MIN_SYSTEM_HYSTERESIS 0.0f
+#define MAX_SYSTEM_HYSTERESIS 25.0f
+#define MIN_LAMP_NUMBER 1
+#define MAX_LAMP_NUMBER 4
 
 /* Global variables */
 ITEM **list_items;
 MENU *selection_menu;
 WINDOW *main_menu_window;
-WINDOW *float_input_window;
+WINDOW *input_window;
 WINDOW *system_status_window;
 
 int user_input;
@@ -22,6 +53,51 @@ char *MENU_CHOICES[] = {
     "Press CTRL + C to stop the program!",
     (char *)NULL,
 };
+
+/*!
+ * @brief Get "ON" or "OFF" string based on status (0 or 1).
+ */
+char *get_on_off_string(int status)
+{
+    if (status == 0)
+    {
+        return "OFF";
+    }
+    else
+    {
+        return "ON";
+    }
+}
+
+/*!
+ * @brief Get "YES" or "NO" string based on status (0 or 1).
+ */
+char *get_yes_no_string(int status)
+{
+    if (status == 0)
+    {
+        return "NO";
+    }
+    else
+    {
+        return "YES";
+    }
+}
+
+/*!
+ * @brief Get "OPEN" or "CLOSED" string based on status (0 or 1).
+ */
+char *get_open_closed_string(int status)
+{
+    if (status == 0)
+    {
+        return "CLOSED";
+    }
+    else
+    {
+        return "OPEN";
+    }
+}
 
 /*!
  * @brief Function used to setup ncurses (display) initial configurations.
@@ -95,7 +171,7 @@ void setup_window_title(WINDOW *win, char *title)
 }
 
 /*!
- * @brief Function used to read float data with a specific message.
+ * @brief Function used to read float data in a range with a specific message.
  */
 float read_float(WINDOW *win, char *message, float minimum_value, float maximum_value)
 {
@@ -103,36 +179,39 @@ float read_float(WINDOW *win, char *message, float minimum_value, float maximum_
     char error_message[50];
 
     echo();
-    display_text(float_input_window, 3, 1, message);
-    wscanw(float_input_window, "%f", &value);
+    display_text(input_window, 3, 1, message);
+    wscanw(input_window, "%f", &value);
     noecho();
-    wrefresh(float_input_window);
+    wrefresh(input_window);
 
     if (value < minimum_value || value > maximum_value)
     {
         sprintf(error_message, " >> Valid interval: %.2f - %.2f", minimum_value, maximum_value);
-        display_text(float_input_window, 3, 1, error_message);
+        display_text(input_window, 3, 1, error_message);
         return -1;
     }
 
     return value;
 }
 
+/*!
+ * @brief Function used to read int data in a range with a specific message.
+ */
 float read_int(WINDOW *win, char *message, int minimum_value, int maximum_value)
 {
     int value = -1;
     char error_message[50];
 
     echo();
-    display_text(float_input_window, 3, 1, message);
-    wscanw(float_input_window, "%d", &value);
+    display_text(input_window, 3, 1, message);
+    wscanw(input_window, "%d", &value);
     noecho();
-    wrefresh(float_input_window);
+    wrefresh(input_window);
 
     if (value < minimum_value || value > maximum_value)
     {
         sprintf(error_message, " >> Valid interval: %d - %d", minimum_value, maximum_value);
-        display_text(float_input_window, 3, 1, error_message);
+        display_text(input_window, 3, 1, error_message);
         return -1;
     }
 
@@ -141,24 +220,18 @@ float read_int(WINDOW *win, char *message, int minimum_value, int maximum_value)
 
 /*!
  * @brief Function used to read float data with a specific message.
- *
- * @param[out] display               :   Display input (float data) window with border.
- *
  */
 void setup_input_menu()
 {
-    float_input_window = newwin(INPUT_FIELD_HEIGHT, DISPLAY_WIDTH, MENU_HEIGHT + HEADER_Y, HEADER_X);
-    setup_window_title(float_input_window, "System Inputs/Outputs");
-    keypad(float_input_window, TRUE);
-    box(float_input_window, 0, 0);
-    wrefresh(float_input_window);
+    input_window = newwin(INPUT_FIELD_HEIGHT, DISPLAY_WIDTH, MENU_HEIGHT + HEADER_Y, HEADER_X);
+    setup_window_title(input_window, "System Inputs/Outputs");
+    keypad(input_window, TRUE);
+    box(input_window, 0, 0);
+    wrefresh(input_window);
 }
 
 /*!
  * @brief Function used to setup the system status area.
- *
- * @param[out] display    :   Display window with system variables information.
- *
  */
 void setup_system_status()
 {
@@ -169,7 +242,7 @@ void setup_system_status()
 }
 
 /*!
- * @brief Function used to read float data with a specific message.
+ * @brief Function used to setup the iterative menu list.
  */
 void setup_iterative_menu()
 {
@@ -232,8 +305,8 @@ void setup_iterative_menu()
             selected_item_value = *selected_item_name;
             if (selected_item_value == '1')
             {
-                option = read_int(float_input_window, "Type the lamp number >> ", MIN_LAMP_NUMBER, MAX_LAMP_NUMBER);
-                wrefresh(float_input_window);
+                option = read_int(input_window, "Type the lamp number >> ", MIN_LAMP_NUMBER, MAX_LAMP_NUMBER);
+                wrefresh(input_window);
                 if (option == -1)
                 {
                     continue;
@@ -243,16 +316,16 @@ void setup_iterative_menu()
 
                 if (environment_data->system_data.devices[option].state == ON)
                 {
-                    sprintf(message, "Lamp %d OFF", option+1);
+                    sprintf(message, "Lamp %d OFF", option + 1);
                 }
                 else
                 {
-                    sprintf(message, "Lamp %d ON", option+1);
+                    sprintf(message, "Lamp %d ON", option + 1);
                 }
             }
             else if (selected_item_value == '2')
             {
-                option = 7-1;
+                option = 7 - 1;
                 if (environment_data->alarm_state.is_alarm_enabled == ON)
                 {
                     environment_data->alarm_state.is_alarm_enabled = OFF;
@@ -266,16 +339,16 @@ void setup_iterative_menu()
             }
             else if (selected_item_value == '3')
             {
-                option = 5-1; // 5 or 6, both are air conditioning
+                option = 5 - 1; // 5 or 6, both are air conditioning
                 if (environment_data->system_data.devices[option].state == ON)
                 {
                     sprintf(message, "Air conditioning 1 e 2 OFF");
                 }
                 else
                 {
-                    reference_temperature = read_float(float_input_window, "Type the reference temperature >> ",
+                    reference_temperature = read_float(input_window, "Type the reference temperature >> ",
                                                        MIN_REFERENCE_TEMPERATUER, MAX_REFERENCE_TEMPERATURE);
-                    hysteresis = read_float(float_input_window, "Type the hysteresis value >> ",
+                    hysteresis = read_float(input_window, "Type the hysteresis value >> ",
                                             MIN_SYSTEM_HYSTERESIS, MAX_SYSTEM_HYSTERESIS);
                     sprintf(message, "Air conditioning 1 e 2 ON with TR %.2f °C and hysteresis %.2f °C",
                             reference_temperature, hysteresis);
@@ -283,19 +356,18 @@ void setup_iterative_menu()
 
                 sprintf(interface_message, " >> %s!", message);
 
-                display_text(float_input_window, 3, 1, interface_message);
+                display_text(input_window, 3, 1, interface_message);
                 store_system_logs(message);
                 send_temperature_data(option, reference_temperature, hysteresis);
 
                 continue;
             }
 
-
             if (option >= 0 && option <= 6)
             {
                 store_system_logs(message);
                 sprintf(interface_message, " >> %s!", message);
-                display_text(float_input_window, 3, 1, interface_message);
+                display_text(input_window, 3, 1, interface_message);
             }
 
             if (option >= 0 && option <= 3)
@@ -312,47 +384,8 @@ void setup_iterative_menu()
     }
 }
 
-char *get_on_off_string(int status)
-{
-    if (status == 0)
-    {
-        return "OFF";
-    }
-    else
-    {
-        return "ON";
-    }
-}
-
-char *get_yes_no_string(int status)
-{
-    if (status == 0)
-    {
-        return "NO";
-    }
-    else
-    {
-        return "YES";
-    }
-}
-
-char *get_open_closed_string(int status)
-{
-    if (status == 0)
-    {
-        return "CLOSED";
-    }
-    else
-    {
-        return "OPEN";
-    }
-}
-
 /*!
  * @brief Function used to display the system variables values.
- *
- * @param[out] display    :   Display system variables values into screen.
- *
  */
 void update_system_status_window()
 {
@@ -465,7 +498,7 @@ void clear_ncurses_alocation()
     free_menu(selection_menu);
 
     delwin(main_menu_window);
-    delwin(float_input_window);
+    delwin(input_window);
 
     endwin();
 }

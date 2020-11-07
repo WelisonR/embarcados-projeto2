@@ -1,14 +1,28 @@
-#include "tcp_server.h"
+/* System header files */
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
-int client_socket_s;
-int server_socket_s;
+/* Own header files */
+#include "tcp_server.h"
+#include "alarm.h"
+
+/* System definitions */
+#define IN_SERVER_PORT 10023
+
+/* Global variables */
+int tcps_client;
+int tcps_server;
 
 /*!
  * @brief This functions is used to receive all system data from client (distributed server)
  */
 void process_tcp_client(struct all_system_data *all_enviroment_data)
 {
-    int received_length = recv(client_socket_s, (void *)&all_enviroment_data->system_data,
+    int received_length = recv(tcps_client, (void *)&all_enviroment_data->system_data,
                                sizeof(struct system_data), 0);
     if (received_length != sizeof(struct system_data))
     {
@@ -18,25 +32,12 @@ void process_tcp_client(struct all_system_data *all_enviroment_data)
     update_alarm_status(all_enviroment_data->system_data.sensors,
                         &all_enviroment_data->alarm_state.alarm_status,
                         &all_enviroment_data->alarm_state.is_alarm_enabled);
-
-    // for (int i = 0; i < DEVICES_LENGTH; i++)
-    // {
-    //     printf("Device %d: %d\n", all_enviroment_data->system_data->devices[i].gpio, all_enviroment_data->system_data->devices[i].state);
-    // }
-
-    // for (int i = 0; i < SENSORS_LENGTH; i++)
-    // {
-    //     printf("Sensor %d: %d\n", all_enviroment_data->system_data->sensors[i].gpio, all_enviroment_data->system_data->sensors[i].state);
-    // }
-
-    // printf("T %f U %f P %f", all_enviroment_data->system_data->bme280_data.temperature,
-    //        all_enviroment_data->system_data->bme280_data.humidity, all_enviroment_data->system_data->bme280_data.temperature);
 }
 
 /*!
  * @brief Create a TCP/IP socket connection.
  */
-int create_server_socket_s()
+int create_tcps_server()
 {
     int tcp_socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (tcp_socket < 0)
@@ -59,10 +60,13 @@ void build_server_struct(struct sockaddr_in *server_address)
     server_address->sin_port = htons(IN_SERVER_PORT);
 }
 
+/*!
+ * @brief This function is used to reuse the connection port address of socket server.
+ */
 void build_server_setsocket()
 {
     int option = 1;
-    int status = setsockopt(server_socket_s, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
+    int status = setsockopt(tcps_server, SOL_SOCKET, SO_REUSEADDR, (void *)&option, sizeof(option));
     if (status < 0)
     {
         printf("Não foi possível configurar o socket com setsocket.\n");
@@ -74,7 +78,7 @@ void build_server_setsocket()
  */
 void bind_server(struct sockaddr_in *server_address)
 {
-    int status = bind(server_socket_s, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
+    int status = bind(tcps_server, (struct sockaddr *)server_address, sizeof(struct sockaddr_in));
     if (status < 0)
     {
         printf("Não foi possível realizar o bind do socket.\n");
@@ -88,7 +92,7 @@ void bind_server(struct sockaddr_in *server_address)
 void listen_server()
 {
     int queue_size = 100;
-    int status = listen(server_socket_s, queue_size);
+    int status = listen(tcps_server, queue_size);
     if (status < 0)
     {
         printf("Não foi possível realizar o listen do socket\n");
@@ -104,7 +108,7 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
     struct sockaddr_in server_address, client_address;
     unsigned int client_length;
 
-    server_socket_s = create_server_socket_s();
+    tcps_server = create_tcps_server();
     build_server_struct(&server_address);
     build_server_setsocket();
     bind_server(&server_address);
@@ -113,8 +117,8 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
     while (1)
     {
         client_length = sizeof(client_address);
-        client_socket_s = accept(server_socket_s, (struct sockaddr *)&client_address, &client_length);
-        if (client_socket_s < 0)
+        tcps_client = accept(tcps_server, (struct sockaddr *)&client_address, &client_length);
+        if (tcps_client < 0)
         {
             printf("Falha no estabelecimento da comunicação.\n");
             sleep(1);
@@ -122,10 +126,10 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
 
         process_tcp_client(all_enviroment_data);
 
-        close(client_socket_s);
+        close(tcps_client);
     }
 
-    close(server_socket_s);
+    close(tcps_server);
 
     return 0;
 }
@@ -135,6 +139,6 @@ int initialize_tcp_server(struct all_system_data *all_enviroment_data)
  */
 void handle_server_close()
 {
-    close(server_socket_s);
-    close(client_socket_s);
+    close(tcps_server);
+    close(tcps_client);
 }

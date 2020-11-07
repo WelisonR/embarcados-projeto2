@@ -1,21 +1,13 @@
 #ifndef TCP_CLIENT_H_
 #define TCP_CLIENT_H_
 
-/* Header includes */
-#include <stdio.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
-
-/* System definitions */
-#define OUT_SERVER_IP "192.168.0.52"
-#define OUT_SERVER_PORT 10123
+/*!
+ * @brief This function is used to check if everything was sent.
+ */
+int check_return_message(int transmitted_bytes, int required_bytes);
 
 /*!
- * @brief This function is used to create a socket connection with server and port above.
+ * @brief This function is used to create a socket connection.
  *
  * @return int with socket identifier.
  *
@@ -59,6 +51,16 @@ void initialize_client_socket();
  */
 void send_int_data(int option);
 
+/*!
+ * @brief This functions is used to send temperature information to distributed server.
+ *
+ * @param[in] option                    :   4 or 5 - air conditioning 1 or air conditioning 2
+ * @param[in] reference_temperature     :   float number with reference temperature.
+ * @param[in] hysteresis                :   float number with hysteresis value.
+ * 
+ * @return void.
+ *
+ */
 void send_temperature_data(int option, float reference_temperature, float hysteresis);
 
 /*!

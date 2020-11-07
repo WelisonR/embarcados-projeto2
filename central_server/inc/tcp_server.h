@@ -2,18 +2,8 @@
 #define TCP_SERVER_H_
 
 /* Header includes */
-#include <stdio.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
 #include "system_defines.h"
-#include "alarm.h"
-
-/* System definitions */
-#define IN_SERVER_PORT 10023
 
 /*!
  * @brief This functions is used to receive all system data from client (distributed server)
@@ -43,6 +33,11 @@ int create_server_socket();
  */
 void build_server_struct(struct sockaddr_in *server_address);
 
+/*!
+ * @brief This function is used to reuse the connection port address of socket server.
+ * 
+ * @return void.
+ */
 void build_server_setsocket();
 
 /*!

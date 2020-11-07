@@ -1,5 +1,10 @@
+/* Own header files */
 #include "alarm.h"
+#include "system_monitor.h"
 
+/*!
+ * @brief Function used to update alarm status (ON or OFF).
+ */
 void update_alarm_status(gpio_state *sensors, int *alarm_status, int *is_alarm_enabled)
 {
     for (int i = 0; i < SENSORS_LENGTH; i++)
@@ -10,15 +15,17 @@ void update_alarm_status(gpio_state *sensors, int *alarm_status, int *is_alarm_e
             {
                 store_system_logs("Alarme ON");
                 *alarm_status = ON;
-                // play .mp3
+                // TODO: play system audio at this point
             }
             return;
         }
     }
 
-    if (*alarm_status == ON) {
+    if (*alarm_status == ON)
+    {
         store_system_logs("Alarme OFF");
-        // stop .mp3
+        // TODO: stop system audio at this point
     }
+
     *alarm_status = OFF;
 }

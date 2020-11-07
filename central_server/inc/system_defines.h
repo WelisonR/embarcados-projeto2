@@ -1,13 +1,14 @@
 #ifndef SYSTEM_DEFINES_H_
 #define SYSTEM_DEFINES_H_
 
+/* System definitions */
 #define DEVICES_LENGTH 6
 #define SENSORS_LENGTH 8
 
 #define ON  1
 #define OFF 0
 
-// TODO: top level structures
+/* System structures */
 struct bme280_data
 {
     double pressure;
